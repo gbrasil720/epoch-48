@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@epoch-48/env": "workspace:*",
+    "csv-parse": "^7.0.1",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
