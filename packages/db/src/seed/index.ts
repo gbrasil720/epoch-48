@@ -21,6 +21,16 @@ if (!databaseUrl) {
 	process.exit(1);
 }
 
+// Local Neon HTTP proxy (db.localtest.me:4444) for docker-compose style setups
+const databaseHost = new URL(databaseUrl).hostname;
+if (databaseHost === "db.localtest.me") {
+	neonConfig.fetchEndpoint = (host) => {
+		const [protocol, port] =
+			host === "db.localtest.me" ? ["http", 4444] : ["https", 443];
+		return `${protocol}://${host}:${port}/sql`;
+	};
+}
+
 const db = drizzle(neon(databaseUrl), { schema });
 
 interface WorldCupCsvRecord {
