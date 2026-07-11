@@ -75,9 +75,11 @@
       "dependencies": {
         "@epoch-48/db": "workspace:*",
         "@epoch-48/env": "workspace:*",
+        "@epoch-48/epoch-engine": "workspace:*",
         "@trpc/client": "catalog:",
         "@trpc/server": "catalog:",
         "dotenv": "catalog:",
+        "drizzle-orm": "^0.45.2",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -117,6 +119,13 @@
       "devDependencies": {
         "@epoch-48/config": "workspace:*",
         "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/epoch-engine": {
+      "name": "@epoch-48/epoch-engine",
+      "devDependencies": {
+        "@epoch-48/config": "workspace:*",
         "typescript": "catalog:",
       },
     },
@@ -267,6 +276,8 @@
     "@epoch-48/db": ["@epoch-48/db@workspace:packages/db"],
 
     "@epoch-48/env": ["@epoch-48/env@workspace:packages/env"],
+
+    "@epoch-48/epoch-engine": ["@epoch-48/epoch-engine@workspace:packages/epoch-engine"],
 
     "@epoch-48/ui": ["@epoch-48/ui@workspace:packages/ui"],
 

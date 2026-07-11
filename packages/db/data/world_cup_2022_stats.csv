@@ -1,33 +1,33 @@
 fifa_code,country_name,phase_reached,matches,pts,gf,gd,yellows,reds
-ARG,Argentina,Winner,7,18,15,7,8,8
-AUS,Australia,Round of 16,4,6,4,-2,6,1
+ARG,Argentina,Winner,7,18,15,7,17,0
+AUS,Australia,Round of 16,4,6,4,-2,7,0
 BEL,Belgium,Group Stage,3,4,1,-1,5,0
 BRA,Brazil,Quarter Finals,5,9,8,5,6,0
 CMR,Cameroon,Group Stage,3,4,4,0,7,1
-CAN,Canada,Group Stage,3,0,2,-5,7,1
-CRC,Costa Rica,Group Stage,3,3,3,-8,5,1
-CRO,Croatia,Third Place,7,14,8,1,6,2
+CAN,Canada,Group Stage,3,0,2,-5,8,0
+CRC,Costa Rica,Group Stage,3,3,3,-8,6,0
+CRO,Croatia,Third Place,7,14,8,1,8,0
 DEN,Denmark,Group Stage,3,1,1,-2,5,0
 ECU,Ecuador,Group Stage,3,4,4,1,3,0
 ENG,England,Quarter Finals,5,10,13,9,1,0
-FRA,France,Runner-up,7,15,16,8,7,1
+FRA,France,Runner-up,7,15,16,8,8,0
 GER,Germany,Group Stage,3,4,6,1,3,0
-GHA,Ghana,Group Stage,3,3,5,-2,5,3
-IRN,Iran,Group Stage,3,3,4,-3,4,3
-JPN,Japan,Round of 16,4,6,5,1,5,1
+GHA,Ghana,Group Stage,3,3,5,-2,8,0
+IRN,Iran,Group Stage,3,3,4,-3,7,0
+JPN,Japan,Round of 16,4,6,5,1,6,0
 MEX,Mexico,Group Stage,3,4,2,-1,7,0
-MAR,Morocco,Fourth Place,7,13,6,1,6,2
-NED,Netherlands,Quarter Finals,5,10,10,6,7,2
+MAR,Morocco,Fourth Place,7,13,6,1,8,1
+NED,Netherlands,Quarter Finals,5,10,10,6,11,1
 POL,Poland,Round of 16,4,4,3,-2,7,0
-PRT,Portugal,Quarter Finals,5,9,12,6,4,2
-QAT,Qatar,Group Stage,3,0,1,-6,5,2
-KSA,Saudi Arabia,Group Stage,3,3,3,-2,10,4
-SEN,Senegal,Round of 16,4,6,5,-2,5,2
-SRB,Serbia,Group Stage,3,1,5,-3,8,4
-KOR,South Korea,Round of 16,4,4,5,-3,5,1
+PRT,Portugal,Quarter Finals,5,9,12,6,6,0
+QAT,Qatar,Group Stage,3,0,1,-6,7,0
+KSA,Saudi Arabia,Group Stage,3,3,3,-2,14,0
+SEN,Senegal,Round of 16,4,6,5,-2,7,0
+SRB,Serbia,Group Stage,3,1,5,-3,12,0
+KOR,South Korea,Round of 16,4,4,5,-3,6,0
 ESP,Spain,Round of 16,4,4,9,6,2,0
-SUI,Switzerland,Round of 16,4,6,5,-4,7,2
-TUN,Tunisia,Group Stage,3,4,1,0,4,1
-USA,United States,Round of 16,4,5,3,-1,4,1
-URU,Uruguay,Group Stage,3,4,2,0,6,2
-WAL,Wales,Group Stage,3,1,1,-5,3,3
+SUI,Switzerland,Round of 16,4,6,5,-4,9,0
+TUN,Tunisia,Group Stage,3,4,1,0,5,0
+USA,United States,Round of 16,4,5,3,-1,5,0
+URU,Uruguay,Group Stage,3,4,2,0,8,0
+WAL,Wales,Group Stage,3,1,1,-5,5,1
