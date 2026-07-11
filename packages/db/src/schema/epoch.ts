@@ -8,6 +8,7 @@ import {
 	uniqueIndex,
 	varchar,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // --- TABELA DE NAÇÕES ---
 // Guarda os dados imutáveis dos 211 países.
@@ -92,3 +93,31 @@ export const fifaRankings = pgTable(
 		};
 	},
 );
+
+// --- RELATIONS ---
+export const nationsRelations = relations(nations, ({ many }) => ({
+	performances: many(performances),
+	fifaRankings: many(fifaRankings),
+}));
+
+export const tournamentsRelations = relations(tournaments, ({ many }) => ({
+	performances: many(performances),
+}));
+
+export const performancesRelations = relations(performances, ({ one }) => ({
+	nation: one(nations, {
+		fields: [performances.nationId],
+		references: [nations.id],
+	}),
+	tournament: one(tournaments, {
+		fields: [performances.tournamentId],
+		references: [tournaments.id],
+	}),
+}));
+
+export const fifaRankingsRelations = relations(fifaRankings, ({ one }) => ({
+	nation: one(nations, {
+		fields: [fifaRankings.nationId],
+		references: [nations.id],
+	}),
+}));
