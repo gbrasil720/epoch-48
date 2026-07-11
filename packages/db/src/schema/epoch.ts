@@ -6,9 +6,11 @@ import {
 	serial,
 	timestamp,
 	uniqueIndex,
+	unique,
 	varchar,
+	check,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // --- TABELA DE NAÇÕES ---
 // Guarda os dados imutáveis dos 211 países.
@@ -23,13 +25,25 @@ export const nations = pgTable("nations", {
 
 // --- TABELA DE TORNEIOS ---
 // Guarda os torneios que geram pontuação (Copas e Copas Continentais)
-export const tournaments = pgTable("tournaments", {
-	id: serial("id").primaryKey(),
-	name: varchar("name", { length: 255 }).notNull(), // ex: "World Cup 2022", "Euro 2020"
-	year: integer("year").notNull(), // ex: 2022
-	type: varchar("type", { length: 50 }).notNull(), // 'WORLD_CUP', 'QUALIFIERS', 'CONTINENTAL'
-	isCompleted: boolean("is_completed").default(true),
-});
+export const tournaments = pgTable(
+	"tournaments",
+	{
+		id: serial("id").primaryKey(),
+		name: varchar("name", { length: 255 }).notNull(), // ex: "World Cup 2022", "Euro 2020"
+		year: integer("year").notNull(), // ex: 2022
+		type: varchar("type", { length: 50 }).notNull(), // 'WORLD_CUP', 'QUALIFIERS', 'CONTINENTAL'
+		isCompleted: boolean("is_completed").default(true),
+	},
+	(table) => {
+		return {
+			uniqueYearType: unique("unique_year_type").on(table.year, table.type),
+			validTournamentType: check(
+				"valid_tournament_type",
+				sql`${table.type} IN ('WORLD_CUP', 'QUALIFIERS', 'CONTINENTAL')`
+			),
+		};
+	}
+);
 
 // --- TABELA DE PERFORMANCE (A MINA DE OURO) ---
 // É aqui que salvamos os dados crus que vão alimentar o epoch-engine
@@ -64,6 +78,19 @@ export const performances = pgTable(
 			nationTournamentIdx: uniqueIndex("nation_tournament_idx").on(
 				table.nationId,
 				table.tournamentId,
+			),
+			validEliminationPhase: check(
+				"valid_elimination_phase",
+				sql`${table.eliminationPhase} IN (
+					'Group Stage',
+					'Round of 32',
+					'Round of 16',
+					'Quarter Finals',
+					'Fourth Place',
+					'Third Place',
+					'Runner-up',
+					'Winner'
+				)`
 			),
 		};
 	},
