@@ -2,5 +2,9 @@ export {
   nations,
   fifaRankings,
   performances,
-  tournaments
+  tournaments,
+  nationsRelations,
+  tournamentsRelations,
+  performancesRelations,
+  fifaRankingsRelations,
 } from "./epoch";
