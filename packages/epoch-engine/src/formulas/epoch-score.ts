@@ -1,19 +1,26 @@
-import { PHASE_WEIGHTS, TournamentPhaseName, type EpochScoreProps } from "../typings";
+import {
+	type EpochScoreProps,
+	PHASE_WEIGHTS,
+	TournamentPhaseName,
+} from "../typings";
 import { performancePoints } from "./performance-points";
 
-export function epochScore(props: EpochScoreProps, continentalBonusBc = 0): number {
-  const pf = PHASE_WEIGHTS[props.tournamentPhase.name]
-  
-  if (props.tournamentPhase.name === TournamentPhaseName.WINNER) return pf
+export function epochScore(
+	props: EpochScoreProps,
+	continentalBonusBc = 0,
+): number {
+	const pf = PHASE_WEIGHTS[props.tournamentPhase.name];
 
-  const pd = performancePoints(props)
+	if (props.tournamentPhase.name === TournamentPhaseName.WINNER) return pf;
 
-  let decimalPart = (pd + continentalBonusBc) / 100
-  if (decimalPart >= 1.0) {
-    decimalPart = 0.99
-  }
+	const pd = performancePoints(props);
 
-  const epochScore = pf + decimalPart
+	let decimalPart = (pd + continentalBonusBc) / 100;
+	if (decimalPart >= 1.0) {
+		decimalPart = 0.99;
+	}
 
-  return Number(epochScore.toFixed(4))
+	const epochScore = pf + decimalPart;
+
+	return Number(epochScore.toFixed(4));
 }

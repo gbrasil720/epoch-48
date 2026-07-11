@@ -1,349 +1,333 @@
 {
-  "id": "facd5636-9f78-488d-85b6-d239e056b429",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.fifa_rankings": {
-      "name": "fifa_rankings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "nation_id": {
-          "name": "nation_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "year": {
-          "name": "year",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "official_rank": {
-          "name": "official_rank",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "official_points": {
-          "name": "official_points",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "nation_year_idx": {
-          "name": "nation_year_idx",
-          "columns": [
-            {
-              "expression": "nation_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "year",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "fifa_rankings_nation_id_nations_id_fk": {
-          "name": "fifa_rankings_nation_id_nations_id_fk",
-          "tableFrom": "fifa_rankings",
-          "tableTo": "nations",
-          "columnsFrom": [
-            "nation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.nations": {
-      "name": "nations",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "code": {
-          "name": "code",
-          "type": "varchar(3)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "flag": {
-          "name": "flag",
-          "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "confederation": {
-          "name": "confederation",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "nations_name_unique": {
-          "name": "nations_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
-        },
-        "nations_code_unique": {
-          "name": "nations_code_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.performances": {
-      "name": "performances",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "nation_id": {
-          "name": "nation_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tournament_id": {
-          "name": "tournament_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "elimination_phase": {
-          "name": "elimination_phase",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "matches_played": {
-          "name": "matches_played",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "points_gained": {
-          "name": "points_gained",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "goals_for": {
-          "name": "goals_for",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "goals_diff": {
-          "name": "goals_diff",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "yellow_cards": {
-          "name": "yellow_cards",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "red_cards": {
-          "name": "red_cards",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "max_possible_points": {
-          "name": "max_possible_points",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        }
-      },
-      "indexes": {
-        "nation_tournament_idx": {
-          "name": "nation_tournament_idx",
-          "columns": [
-            {
-              "expression": "nation_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "tournament_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "performances_nation_id_nations_id_fk": {
-          "name": "performances_nation_id_nations_id_fk",
-          "tableFrom": "performances",
-          "tableTo": "nations",
-          "columnsFrom": [
-            "nation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "performances_tournament_id_tournaments_id_fk": {
-          "name": "performances_tournament_id_tournaments_id_fk",
-          "tableFrom": "performances",
-          "tableTo": "tournaments",
-          "columnsFrom": [
-            "tournament_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.tournaments": {
-      "name": "tournaments",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "year": {
-          "name": "year",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_completed": {
-          "name": "is_completed",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    }
-  },
-  "enums": {},
-  "schemas": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "views": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+	"id": "facd5636-9f78-488d-85b6-d239e056b429",
+	"prevId": "00000000-0000-0000-0000-000000000000",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.fifa_rankings": {
+			"name": "fifa_rankings",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"nation_id": {
+					"name": "nation_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"year": {
+					"name": "year",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"official_rank": {
+					"name": "official_rank",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"official_points": {
+					"name": "official_points",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"nation_year_idx": {
+					"name": "nation_year_idx",
+					"columns": [
+						{
+							"expression": "nation_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "year",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"fifa_rankings_nation_id_nations_id_fk": {
+					"name": "fifa_rankings_nation_id_nations_id_fk",
+					"tableFrom": "fifa_rankings",
+					"tableTo": "nations",
+					"columnsFrom": ["nation_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.nations": {
+			"name": "nations",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"code": {
+					"name": "code",
+					"type": "varchar(3)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"flag": {
+					"name": "flag",
+					"type": "varchar(10)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"confederation": {
+					"name": "confederation",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"is_active": {
+					"name": "is_active",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": false,
+					"default": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"nations_name_unique": {
+					"name": "nations_name_unique",
+					"nullsNotDistinct": false,
+					"columns": ["name"]
+				},
+				"nations_code_unique": {
+					"name": "nations_code_unique",
+					"nullsNotDistinct": false,
+					"columns": ["code"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.performances": {
+			"name": "performances",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"nation_id": {
+					"name": "nation_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"tournament_id": {
+					"name": "tournament_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"elimination_phase": {
+					"name": "elimination_phase",
+					"type": "varchar(100)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"matches_played": {
+					"name": "matches_played",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"points_gained": {
+					"name": "points_gained",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"goals_for": {
+					"name": "goals_for",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"goals_diff": {
+					"name": "goals_diff",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"yellow_cards": {
+					"name": "yellow_cards",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"red_cards": {
+					"name": "red_cards",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"max_possible_points": {
+					"name": "max_possible_points",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"default": 0
+				}
+			},
+			"indexes": {
+				"nation_tournament_idx": {
+					"name": "nation_tournament_idx",
+					"columns": [
+						{
+							"expression": "nation_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "tournament_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"performances_nation_id_nations_id_fk": {
+					"name": "performances_nation_id_nations_id_fk",
+					"tableFrom": "performances",
+					"tableTo": "nations",
+					"columnsFrom": ["nation_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"performances_tournament_id_tournaments_id_fk": {
+					"name": "performances_tournament_id_tournaments_id_fk",
+					"tableFrom": "performances",
+					"tableTo": "tournaments",
+					"columnsFrom": ["tournament_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.tournaments": {
+			"name": "tournaments",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"year": {
+					"name": "year",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "varchar(50)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"is_completed": {
+					"name": "is_completed",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": false,
+					"default": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
 }
