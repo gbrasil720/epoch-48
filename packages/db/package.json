@@ -1,34 +1,34 @@
 {
-  "name": "@epoch-48/db",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./schema": {
-      "default": "./src/schema/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
-    "db:baseline": "bun run src/baseline.ts",
-    "db:migrate": "bun run src/migrate.ts"
-  },
-  "dependencies": {
-    "@epoch-48/env": "workspace:*",
-    "@neondatabase/serverless": "^1.1.0",
-    "dotenv": "catalog:",
-    "drizzle-orm": "^0.45.2",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@epoch-48/config": "workspace:*",
-    "drizzle-kit": "^0.31.10",
-    "typescript": "catalog:"
-  }
+	"name": "@epoch-48/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./schema": {
+			"default": "./src/schema/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:studio": "drizzle-kit studio",
+		"db:baseline": "bun run src/baseline.ts",
+		"db:migrate": "bun run src/migrate.ts"
+	},
+	"dependencies": {
+		"@epoch-48/env": "workspace:*",
+		"@neondatabase/serverless": "^1.1.0",
+		"dotenv": "catalog:",
+		"drizzle-orm": "^0.45.2",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@epoch-48/config": "workspace:*",
+		"drizzle-kit": "^0.31.10",
+		"typescript": "catalog:"
+	}
 }
