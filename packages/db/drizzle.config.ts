@@ -9,14 +9,14 @@ import { resolveMigrationDatabaseUrl } from "./src/db-url";
 neonConfig.poolQueryViaFetch = true;
 
 dotenv.config({
-  path: "../../apps/server/.env",
+	path: "../../apps/server/.env",
 });
 
 export default defineConfig({
-  schema: "./src/schema",
-  out: "./src/migrations",
-  dialect: "postgresql",
-  dbCredentials: {
-    url: resolveMigrationDatabaseUrl(),
-  },
+	schema: "./src/schema",
+	out: "./src/migrations",
+	dialect: "postgresql",
+	dbCredentials: {
+		url: resolveMigrationDatabaseUrl(),
+	},
 });
