@@ -18,3 +18,4 @@ Domain terms for Epoch 48. Source of truth for math: `whitepaper.md`.
 | **Reality Check (vs FIFA)** | Comparison mode showing the FIFA official rank and the delta between it and the Epoch rank. |
 | **Historical Evolution (vs Historical)** | Comparison mode showing the nation's rank in the previous epoch and positions gained/lost across cycles. |
 | **Comparison Mode** | Ranking-table state: `none`, `fifa`, or `historical`; toggles delta column visibility. Kept in the URL (`?mode=`). |
+| **Formula Playground** | Interactive methodology widget: reader adjusts inputs (phase, goal difference, cards…) and sees the resulting ES or Q-Index computed live. Breaks up the long-form text. |
