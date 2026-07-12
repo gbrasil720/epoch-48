@@ -18,6 +18,8 @@ export function epochScore(
 	let decimalPart = (pd + continentalBonusBc) / 100;
 	if (decimalPart >= 1.0) {
 		decimalPart = 0.99;
+	} else if (decimalPart < 0) {
+		decimalPart = 0;
 	}
 
 	const epochScore = pf + decimalPart;

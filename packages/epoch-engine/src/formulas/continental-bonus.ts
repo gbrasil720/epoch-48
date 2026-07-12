@@ -9,7 +9,7 @@ export function continentalBonus(
 	const ppm = props.pointsGained / props.gamesPlayed;
 	const gd = props.goalsDiff;
 
-	const rawBonus = ppm * 5 * (gd * 1);
+	const rawBonus = ppm * 5 * gd;
 	const finalBonus = rawBonus * cFactor;
 
 	return Number(finalBonus.toFixed(2));
