@@ -25,11 +25,11 @@ describe("continentalBonus", () => {
 		expect(continentalBonus(baseProps, 0)).toBe(0);
 	});
 
-	it("computes bonus correctly for positive GD", () => {
-		// ppm = 7/6 = 1.1667
-		// rawBonus = (1.1667 * 5) * 5 = 29.167
-		// finalBonus = 29.167 * 0.5 = 14.58
-		expect(continentalBonus(baseProps, 0.5)).toBe(14.58);
+	it("computes bonus correctly for positive GD (additive formula)", () => {
+		// ppm = 7/6 ≈ 1.1667
+		// rawBonus = (1.1667 * 5) + (5 * 1) = 5.8333 + 5 = 10.8333
+		// finalBonus = 10.8333 * 0.5 = 5.42
+		expect(continentalBonus(baseProps, 0.5)).toBe(5.42);
 	});
 
 	it("computes negative bonus for negative GD", () => {
@@ -38,23 +38,25 @@ describe("continentalBonus", () => {
 			goalsDiff: -3,
 		};
 		// ppm = 1.1667
-		// rawBonus = (1.1667 * 5) * (-3) = -17.5
-		// finalBonus = -17.5 * 0.5 = -8.75
-		expect(continentalBonus(props, 0.5)).toBe(-8.75);
+		// rawBonus = (1.1667 * 5) + (-3) = 5.8333 - 3 = 2.8333
+		// finalBonus = 2.8333 * 0.5 = 1.42
+		expect(continentalBonus(props, 0.5)).toBe(1.42);
 	});
 
-	it("computes zero bonus for zero GD", () => {
+	it("computes bonus for zero GD (PPM only)", () => {
 		const props: EpochScoreProps = {
 			...baseProps,
 			goalsDiff: 0,
 		};
-		expect(continentalBonus(props, 0.5)).toBe(0);
+		// rawBonus = (1.1667 * 5) + 0 = 5.8333
+		// finalBonus = 5.8333 * 0.5 = 2.92
+		expect(continentalBonus(props, 0.5)).toBe(2.92);
 	});
 
 	it("applies different confederation factors", () => {
-		expect(continentalBonus(baseProps, 0.5)).toBe(14.58);
-		expect(continentalBonus(baseProps, 0.4)).toBe(11.67);
-		expect(continentalBonus(baseProps, 0.3)).toBe(8.75);
+		expect(continentalBonus(baseProps, 0.5)).toBe(5.42);
+		expect(continentalBonus(baseProps, 0.4)).toBe(4.33);
+		expect(continentalBonus(baseProps, 0.3)).toBe(3.25);
 	});
 
 	it("handles perfect group stage performance", () => {
@@ -65,8 +67,8 @@ describe("continentalBonus", () => {
 			gamesPlayed: 3,
 			goalsDiff: 6,
 		};
-		// ppm = 3, rawBonus = 15 * 6 = 90
-		// finalBonus = 90 * 0.5 = 45
-		expect(continentalBonus(props, 0.5)).toBe(45);
+		// ppm = 3, rawBonus = 15 + 6 = 21
+		// finalBonus = 21 * 0.5 = 10.5
+		expect(continentalBonus(props, 0.5)).toBe(10.5);
 	});
 });

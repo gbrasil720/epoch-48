@@ -1,3 +1,4 @@
+export { computeCFactor } from "./formulas/c-factor";
 export { continentalBonus } from "./formulas/continental-bonus";
 export { epochScore } from "./formulas/epoch-score";
 export { getCardCount } from "./formulas/get-card-count";

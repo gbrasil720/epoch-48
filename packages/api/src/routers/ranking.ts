@@ -1,11 +1,13 @@
 import { db } from "@epoch-48/db";
 import {
+	computeCFactor,
 	continentalBonus,
 	epochScore,
 	qIndex,
-	type TournamentPhaseName,
+	TournamentPhaseName,
+	type EpochScoreProps,
 } from "@epoch-48/epoch-engine";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { z } from "zod";
 import { publicProcedure, router } from "../index";
 
@@ -38,6 +40,49 @@ export type EpochRow = {
 		} | null;
 	};
 };
+
+type PerfWithNation = {
+	nationId: number;
+	eliminationPhase: string;
+	matchesPlayed: number;
+	pointsGained: number;
+	goalsFor: number;
+	goalsDiff: number;
+	yellowCards: number;
+	redCards: number;
+	maxPossiblePoints: number | null;
+	nation: {
+		id: number;
+		name: string;
+		code: string;
+		flag: string | null;
+		confederation: string | null;
+	};
+};
+
+function toEpochScoreProps(perf: {
+	eliminationPhase: string;
+	matchesPlayed: number;
+	pointsGained: number;
+	goalsFor: number;
+	goalsDiff: number;
+	yellowCards: number;
+	redCards: number;
+}): EpochScoreProps {
+	return {
+		tournamentPhase: {
+			name: perf.eliminationPhase as TournamentPhaseName,
+		},
+		pointsGained: perf.pointsGained,
+		gamesPlayed: perf.matchesPlayed,
+		goalsDiff: perf.goalsDiff,
+		goalsFor: perf.goalsFor,
+		cardsReceived: [
+			{ color: "yellow" as const, count: perf.yellowCards },
+			{ color: "red" as const, count: perf.redCards },
+		],
+	};
+}
 
 function buildEpochRow(
 	_nationId: number,
@@ -73,95 +118,137 @@ function buildEpochRow(
 	};
 }
 
+function advancedPastGroupStage(eliminationPhase: string): boolean {
+	return eliminationPhase !== TournamentPhaseName.GROUP_STAGE;
+}
+
+/**
+ * Build per-confederation C-Factor from World Cup results:
+ * C_f = (nations past group stage) / (nations at WC) for that confederation.
+ */
+function buildCFactorByConfederation(
+	wcPerformances: PerfWithNation[],
+): Map<string, number> {
+	const totals = new Map<string, { advanced: number; total: number }>();
+
+	for (const perf of wcPerformances) {
+		const confed = perf.nation.confederation?.trim() || "UNKNOWN";
+		const entry = totals.get(confed) ?? { advanced: 0, total: 0 };
+		entry.total += 1;
+		if (advancedPastGroupStage(perf.eliminationPhase)) {
+			entry.advanced += 1;
+		}
+		totals.set(confed, entry);
+	}
+
+	const factors = new Map<string, number>();
+	for (const [confed, { advanced, total }] of totals) {
+		factors.set(confed, computeCFactor(advanced, total));
+	}
+	return factors;
+}
+
+async function getPreviousWorldCupYear(
+	year: number,
+): Promise<number | null> {
+	const prevCups = await db.query.tournaments.findMany({
+		where: (t) => and(eq(t.type, "WORLD_CUP"), lt(t.year, year)),
+		columns: { year: true },
+	});
+	if (prevCups.length === 0) return null;
+	return Math.max(...prevCups.map((t) => t.year));
+}
+
 async function getEpochInternal(year: number): Promise<EpochRow[]> {
-	// Get World Cup + Continental tournaments for this year
+	// 1. World Cup for this epoch year
 	const worldCup = await db.query.tournaments.findFirst({
 		where: (t) => and(eq(t.year, year), eq(t.type, "WORLD_CUP")),
 	});
 
-	const continentalTournaments = await db.query.tournaments.findMany({
-		where: (t) => and(eq(t.year, year), eq(t.type, "CONTINENTAL")),
-	});
-
-	const tournamentIds = [
-		worldCup?.id,
-		...continentalTournaments.map((t) => t.id),
-	].filter(Boolean) as number[];
-
-	if (tournamentIds.length === 0) {
+	if (!worldCup) {
 		return [];
 	}
 
-	// Fetch performances for Tier 1 nations
-	const performancesRows = await db.query.performances.findMany({
-		where: (p) => inArray(p.tournamentId, tournamentIds),
+	// 2. Tier 1 base: WC performances only (one row per nation)
+	const wcPerformances = (await db.query.performances.findMany({
+		where: (p) => eq(p.tournamentId, worldCup.id),
 		with: {
 			nation: true,
 			tournament: true,
 		},
-	});
+	})) as PerfWithNation[];
 
-	// Fetch FIFA rankings for this year
+	// 3. Continental tournaments for mid-cycle bonus (any year in the cycle
+	//    ending at this WC — previous WC exclusive through current year)
+	const previousWcYear = await getPreviousWorldCupYear(year);
+	const cycleStart = previousWcYear ?? year - 4;
+
+	// Continental tournaments in the open cycle (after previous WC, through this WC year)
+	const continentalTournaments = await db.query.tournaments.findMany({
+		where: (t) => eq(t.type, "CONTINENTAL"),
+	});
+	const cycleContinentalIds = continentalTournaments
+		.filter((t) => t.year > cycleStart && t.year <= year)
+		.map((t) => t.id);
+
+	const continentalByNationId = new Map<number, PerfWithNation>();
+	if (cycleContinentalIds.length > 0) {
+		const continentalPerfs = (await db.query.performances.findMany({
+			where: (p) => inArray(p.tournamentId, cycleContinentalIds),
+			with: {
+				nation: true,
+				tournament: true,
+			},
+		})) as PerfWithNation[];
+
+		// Prefer the most recent continental performance per nation if multiple
+		for (const perf of continentalPerfs) {
+			const existing = continentalByNationId.get(perf.nationId);
+			if (!existing) {
+				continentalByNationId.set(perf.nationId, perf);
+			}
+		}
+	}
+
+	// 4. FIFA rankings
 	const fifaRankingRows = await db.query.fifaRankings.findMany({
 		where: (f) => eq(f.year, year),
 		with: {
 			nation: true,
 		},
 	});
-
-	// Build lookup map: nationId -> fifaRank
 	const fifaRankMap = new Map<number, number>();
 	for (const row of fifaRankingRows) {
 		fifaRankMap.set(row.nationId, row.officialRank);
 	}
 
-	// Build set of nation IDs that have performances (Tier 1)
-	const tier1NationIds = new Set(performancesRows.map((p) => p.nationId));
+	// 5. C-Factors from WC group-stage outcomes
+	const cFactorByConfed = buildCFactorByConfederation(wcPerformances);
 
-	// Compute previous epoch ranks for historical delta
-	const prevYear = year - 1;
+	// 6. Historical ranks from previous World Cup epoch
 	let previousRankMap: Map<string, number> | null = null;
-	if (prevYear >= 2014) {
-		const prevEpoch = await getEpochInternal(prevYear);
+	if (previousWcYear !== null) {
+		const prevEpoch = await getEpochInternal(previousWcYear);
 		previousRankMap = new Map(prevEpoch.map((r) => [r.nation.code, r.rank]));
 	}
 
-	// --- Tier 1: Nations with World Cup / Continental performances ---
-	const tier1Results: EpochRow[] = performancesRows.map((perf) => {
+	// --- Tier 1: one row per WC nation ---
+	const tier1NationIds = new Set(wcPerformances.map((p) => p.nationId));
+	const tier1Results: EpochRow[] = wcPerformances.map((perf) => {
 		const nation = perf.nation;
 		const fifaRank = fifaRankMap.get(nation.id) ?? null;
+		const confed = nation.confederation?.trim() || "UNKNOWN";
+		const cFactor = cFactorByConfed.get(confed) ?? 0;
 
-		const score = epochScore({
-			tournamentPhase: {
-				name: perf.eliminationPhase as TournamentPhaseName,
-			},
-			pointsGained: perf.pointsGained,
-			gamesPlayed: perf.matchesPlayed,
-			goalsDiff: perf.goalsDiff,
-			goalsFor: perf.goalsFor,
-			cardsReceived: [
-				{ color: "yellow" as const, count: perf.yellowCards },
-				{ color: "red" as const, count: perf.redCards },
-			],
-		});
+		const wcProps = toEpochScoreProps(perf);
 
-		const cBonus = continentalBonus(
-			{
-				tournamentPhase: {
-					name: perf.eliminationPhase as TournamentPhaseName,
-				},
-				pointsGained: perf.pointsGained,
-				gamesPlayed: perf.matchesPlayed,
-				goalsDiff: perf.goalsDiff,
-				goalsFor: perf.goalsFor,
-				cardsReceived: [
-					{ color: "yellow" as const, count: perf.yellowCards },
-					{ color: "red" as const, count: perf.redCards },
-				],
-			},
-			0.01,
-		);
+		let bc = 0;
+		const contPerf = continentalByNationId.get(nation.id);
+		if (contPerf) {
+			bc = continentalBonus(toEpochScoreProps(contPerf), cFactor);
+		}
 
+		const score = epochScore(wcProps, bc);
 		const prevRank = previousRankMap?.get(nation.code) ?? null;
 
 		return buildEpochRow(
@@ -174,7 +261,7 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 			perf.eliminationPhase,
 			score,
 			fifaRank,
-			0, // assigned later after sorting
+			0,
 			prevRank,
 			{
 				matchesPlayed: perf.matchesPlayed,
@@ -183,13 +270,12 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 				goalsDiff: perf.goalsDiff,
 				yellowCards: perf.yellowCards,
 				redCards: perf.redCards,
-				continentalBonus: cBonus || null,
+				continentalBonus: bc || null,
 				qualifier: null,
 			},
 		);
 	});
 
-	// Sort Tier 1 by score desc, then fifaRank asc as tiebreaker
 	tier1Results.sort((a, b) => {
 		if (b.score !== a.score) return b.score - a.score;
 		if (a.fifaRank === null && b.fifaRank === null) return 0;
@@ -198,42 +284,88 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 		return a.fifaRank - b.fifaRank;
 	});
 
-	// Assign ranks for Tier 1
 	tier1Results.forEach((r, i) => {
 		r.rank = i + 1;
 	});
 
-	// --- Tier 2: Nations with FIFA rankings but no World Cup/Continental performance ---
-	const tier2Nations = fifaRankingRows.filter(
+	// --- Tier 2: non-WC nations (FIFA-listed without WC, scored via Q-Index) ---
+	const tier2Candidates = fifaRankingRows.filter(
 		(fr) => !tier1NationIds.has(fr.nationId),
 	);
 
-	// Fetch qualifier tournaments for this year
 	const qualifierTournaments = await db.query.tournaments.findMany({
 		where: (t) => and(eq(t.year, year), eq(t.type, "QUALIFIERS")),
 	});
-	const qualifierTournamentIds = qualifierTournaments.map((t) => t.id);
+	// Also include qualifiers from the cycle leading into this WC
+	const allQualifierTournaments = await db.query.tournaments.findMany({
+		where: (t) => eq(t.type, "QUALIFIERS"),
+	});
+	const qualifierTournamentIds = [
+		...new Set([
+			...qualifierTournaments.map((t) => t.id),
+			...allQualifierTournaments
+				.filter((t) => t.year > cycleStart && t.year <= year)
+				.map((t) => t.id),
+		]),
+	];
+
+	const qualifierByNationId = new Map<
+		number,
+		{
+			pointsGained: number;
+			maxPossiblePoints: number | null;
+			goalsDiff: number;
+			matchesPlayed: number;
+			goalsFor: number;
+			yellowCards: number;
+			redCards: number;
+		}
+	>();
+	if (qualifierTournamentIds.length > 0) {
+		const qPerfs = await db.query.performances.findMany({
+			where: (p) => inArray(p.tournamentId, qualifierTournamentIds),
+		});
+		for (const qp of qPerfs) {
+			if (!qualifierByNationId.has(qp.nationId)) {
+				qualifierByNationId.set(qp.nationId, qp);
+			}
+		}
+	}
 
 	const tier2Results: EpochRow[] = [];
 
-	for (const fr of tier2Nations) {
-		const nation = fr.nation;
-		const prevRank = previousRankMap?.get(nation.code) ?? null;
-
-		// Look for qualifier performance
-		let qualifierPerf = null;
-		if (qualifierTournamentIds.length > 0) {
-			const qPerfs = await db.query.performances.findMany({
-				where: (p) =>
-					and(
-						eq(p.nationId, fr.nationId),
-						inArray(p.tournamentId, qualifierTournamentIds),
-					),
-			});
-			if (qPerfs.length > 0) {
-				qualifierPerf = qPerfs[0];
-			}
+	// Include FIFA-listed non-WC nations, plus any qualifier-only nations not in FIFA table
+	const tier2NationIds = new Set(tier2Candidates.map((fr) => fr.nationId));
+	for (const nationId of qualifierByNationId.keys()) {
+		if (!tier1NationIds.has(nationId)) {
+			tier2NationIds.add(nationId);
 		}
+	}
+
+	// Build nation lookup for qualifier-only nations
+	const extraNationIds = [...tier2NationIds].filter(
+		(id) => !tier2Candidates.some((fr) => fr.nationId === id),
+	);
+	const extraNations =
+		extraNationIds.length > 0
+			? await db.query.nations.findMany({
+					where: (n) => inArray(n.id, extraNationIds),
+				})
+			: [];
+	const nationById = new Map(
+		[
+			...tier2Candidates.map((fr) => [fr.nationId, fr.nation] as const),
+			...extraNations.map((n) => [n.id, n] as const),
+		],
+	);
+
+	for (const nationId of tier2NationIds) {
+		const nation = nationById.get(nationId);
+		if (!nation) continue;
+
+		const fifaRank = fifaRankMap.get(nationId) ?? null;
+		const prevRank = previousRankMap?.get(nation.code) ?? null;
+		const qualifierPerf = qualifierByNationId.get(nationId) ?? null;
 
 		let score = 0;
 		let qualifierStats: {
@@ -257,7 +389,7 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 
 		tier2Results.push(
 			buildEpochRow(
-				nation.id,
+				nationId,
 				nation.name,
 				nation.code,
 				nation.flag,
@@ -265,8 +397,8 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 				2,
 				"Qualifiers",
 				score,
-				fr.officialRank,
-				0, // assigned later after sorting
+				fifaRank,
+				0,
 				prevRank,
 				{
 					matchesPlayed: qualifierPerf?.matchesPlayed ?? 0,
@@ -282,7 +414,6 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 		);
 	}
 
-	// Sort Tier 2 by score desc, then fifaRank asc
 	tier2Results.sort((a, b) => {
 		if (b.score !== a.score) return b.score - a.score;
 		if (a.fifaRank === null && b.fifaRank === null) return 0;
@@ -291,13 +422,12 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 		return a.fifaRank - b.fifaRank;
 	});
 
-	// Assign ranks for Tier 2 (continuing from Tier 1)
 	const tier1Count = tier1Results.length;
 	tier2Results.forEach((r, i) => {
 		r.rank = tier1Count + i + 1;
 	});
 
-	// Recalculate fifaDelta and historicalDelta after rank assignment
+	// Recalculate deltas after final rank assignment
 	for (const r of [...tier1Results, ...tier2Results]) {
 		r.fifaDelta = r.fifaRank !== null ? r.fifaRank - r.rank : null;
 		r.historicalDelta =
@@ -315,7 +445,9 @@ export const rankingRouter = router({
 		}),
 
 	getTop: publicProcedure
-		.input(z.object({ year: z.number().optional(), limit: z.number().optional() }))
+		.input(
+			z.object({ year: z.number().optional(), limit: z.number().optional() }),
+		)
 		.query(async ({ input }): Promise<EpochRow[]> => {
 			const year = input.year ?? 2022;
 			const limit = input.limit ?? 10;
@@ -325,7 +457,7 @@ export const rankingRouter = router({
 
 	listEpochs: publicProcedure.query(async (): Promise<number[]> => {
 		const tournamentsRows = await db.query.tournaments.findMany({
-			where: (t) => eq(t.isCompleted, true),
+			where: (t) => and(eq(t.type, "WORLD_CUP"), eq(t.isCompleted, true)),
 			columns: { year: true },
 		});
 		const years = [...new Set(tournamentsRows.map((t) => t.year))].sort(

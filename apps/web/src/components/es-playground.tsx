@@ -82,8 +82,8 @@ export default function ESPlayground() {
 	);
 
 	const es = useMemo(
-		() => epochScore(baseProps, cFactor),
-		[baseProps, cFactor],
+		() => epochScore(baseProps, cb),
+		[baseProps, cb],
 	);
 
 	return (

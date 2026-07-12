@@ -25,6 +25,8 @@ export const nations = pgTable("nations", {
 
 // --- TABELA DE TORNEIOS ---
 // Guarda os torneios que geram pontuação (Copas e Copas Continentais)
+// Note: multiple CONTINENTAL tournaments may share a calendar year
+// (e.g. Euro + Copa América), so uniqueness is on (name, year).
 export const tournaments = pgTable(
 	"tournaments",
 	{
@@ -36,7 +38,7 @@ export const tournaments = pgTable(
 	},
 	(table) => {
 		return {
-			uniqueYearType: unique("unique_year_type").on(table.year, table.type),
+			uniqueNameYear: unique("unique_name_year").on(table.name, table.year),
 			validTournamentType: check(
 				"valid_tournament_type",
 				sql`${table.type} IN ('WORLD_CUP', 'QUALIFIERS', 'CONTINENTAL')`

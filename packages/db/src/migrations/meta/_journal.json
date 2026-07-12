@@ -15,6 +15,13 @@
 			"when": 1783811782311,
 			"tag": "0001_past_wallflower",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1783900000000,
+			"tag": "0002_tournament_name_year_unique",
+			"breakpoints": true
 		}
 	]
 }

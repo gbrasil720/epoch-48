@@ -179,15 +179,17 @@ for (const record of records) {
     db.run(
       `INSERT INTO performances (nation_id, tournament_id, elimination_phase, matches_played, points_gained, goals_for, goals_diff, yellow_cards, red_cards)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      nation.id,
-      tournamentId,
-      record.phase_reached,
-      matchesPlayed,
-      pointsGained,
-      goalsFor,
-      goalsDiff,
-      yellowCards,
-      redCards
+      [
+        nation.id,
+        tournamentId,
+        record.phase_reached,
+        matchesPlayed,
+        pointsGained,
+        goalsFor,
+        goalsDiff,
+        yellowCards,
+        redCards,
+      ],
     );
     console.log(`✅ Added: ${nation.name} (${record.fifa_code}) | Phase: ${record.phase_reached} | Pts: ${pointsGained} | GF: ${goalsFor} | GD: ${goalsDiff} | Y: ${yellowCards} | R: ${redCards}`);
     inserted++;
@@ -339,15 +341,17 @@ for (const record of records) {
     db.run(
       `INSERT INTO performances (nation_id, tournament_id, elimination_phase, matches_played, points_gained, goals_for, goals_diff, yellow_cards, red_cards)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      nation.id,
-      tournamentId,
-      record.phase_reached,
-      Number.parseInt(record.matches, 10),
-      Number.parseInt(record.pts, 10),
-      Number.parseInt(record.gf, 10),
-      Number.parseInt(record.gd, 10),
-      Number.parseInt(record.yellows, 10),
-      Number.parseInt(record.reds, 10)
+      [
+        nation.id,
+        tournamentId,
+        record.phase_reached,
+        Number.parseInt(record.matches, 10),
+        Number.parseInt(record.pts, 10),
+        Number.parseInt(record.gf, 10),
+        Number.parseInt(record.gd, 10),
+        Number.parseInt(record.yellows, 10),
+        Number.parseInt(record.reds, 10),
+      ],
     );
     inserted2++;
   } catch (err: any) {
