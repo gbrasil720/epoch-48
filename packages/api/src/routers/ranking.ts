@@ -1,11 +1,11 @@
-import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@epoch-48/db";
 import {
+	continentalBonus,
 	epochScore,
 	qIndex,
-	continentalBonus,
-	TournamentPhaseName,
+	type TournamentPhaseName,
 } from "@epoch-48/epoch-engine";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { publicProcedure, router } from "../index";
 
@@ -116,18 +116,14 @@ async function getEpochInternal(year: number): Promise<EpochRow[]> {
 	}
 
 	// Build set of nation IDs that have performances (Tier 1)
-	const tier1NationIds = new Set(
-		performancesRows.map((p) => p.nationId),
-	);
+	const tier1NationIds = new Set(performancesRows.map((p) => p.nationId));
 
 	// Compute previous epoch ranks for historical delta
 	const prevYear = year - 1;
 	let previousRankMap: Map<string, number> | null = null;
 	if (prevYear >= 2014) {
 		const prevEpoch = await getEpochInternal(prevYear);
-		previousRankMap = new Map(
-			prevEpoch.map((r) => [r.nation.code, r.rank]),
-		);
+		previousRankMap = new Map(prevEpoch.map((r) => [r.nation.code, r.rank]));
 	}
 
 	// --- Tier 1: Nations with World Cup / Continental performances ---
@@ -323,9 +319,9 @@ export const rankingRouter = router({
 			where: (t) => eq(t.isCompleted, true),
 			columns: { year: true },
 		});
-		const years = [
-			...new Set(tournamentsRows.map((t) => t.year)),
-		].sort((a, b) => b - a);
+		const years = [...new Set(tournamentsRows.map((t) => t.year))].sort(
+			(a, b) => b - a,
+		);
 		return years;
 	}),
 });
