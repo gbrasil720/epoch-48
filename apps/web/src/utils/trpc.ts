@@ -4,42 +4,13 @@ import { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
-function getServerUrl(url: string) {
-	const normalized = url.endsWith("/") ? url.slice(0, -1) : url;
-
-	if (!normalized.startsWith("/")) {
-		return normalized;
-	}
-
-	if (typeof window !== "undefined") {
-		return `${window.location.origin}${normalized}`;
-	}
-
-	const processEnv = (
-		globalThis as {
-			process?: { env?: Record<string, string | undefined> };
-		}
-	).process?.env;
-	const vercelUrl =
-		processEnv?.VERCEL_ENV === "production"
-			? (processEnv?.VERCEL_PROJECT_PRODUCTION_URL ?? processEnv?.VERCEL_URL)
-			: (processEnv?.VERCEL_URL ?? processEnv?.VERCEL_PROJECT_PRODUCTION_URL);
-	if (vercelUrl) {
-		const origin = vercelUrl.startsWith("http")
-			? vercelUrl
-			: `https://${vercelUrl}`;
-		return `${origin}${normalized}`;
-	}
-
-	return `http://localhost:3000${normalized}`;
-}
-
 export const queryClient = new QueryClient();
 
+// Client-side tRPC: uses relative path, served by Next.js route handler at /trpc
 const trpcClient = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: `${getServerUrl(env.NEXT_PUBLIC_SERVER_URL)}/trpc`,
+			url: "/trpc",
 		}),
 	],
 });
@@ -49,11 +20,13 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 	queryClient,
 });
 
-// Server-side client for RSC
+// Server-side client for RSC: calls the local Next.js route handler
+const serverUrl = env.NEXT_PUBLIC_SERVER_URL.replace(/\/$/, "");
+
 export const trpcServer = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: `${getServerUrl(env.NEXT_PUBLIC_SERVER_URL)}/trpc`,
+			url: `${serverUrl}/trpc`,
 		}),
 	],
 });

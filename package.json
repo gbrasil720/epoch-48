@@ -42,6 +42,7 @@
 		"@epoch-48/env": "workspace:*",
 		"csv-parse": "^7.0.1",
 		"dotenv": "catalog:",
+		"framer-motion": "^12.42.2",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
