@@ -1,12 +1,16 @@
 {
-  "name": "@epoch-48/epoch-engine",
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./typings": "./src/typings/index.ts"
-  },
-  "devDependencies": {
-    "@epoch-48/config": "workspace:*",
-    "typescript": "catalog:"
-  }
+	"name": "@epoch-48/epoch-engine",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./typings": "./src/typings/index.ts"
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit",
+		"test": "bun test"
+	},
+	"devDependencies": {
+		"@epoch-48/config": "workspace:*",
+		"typescript": "catalog:"
+	}
 }
