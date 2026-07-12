@@ -48,3 +48,12 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
 	client: trpcClient,
 	queryClient,
 });
+
+// Server-side client for RSC
+export const trpcServer = createTRPCClient<AppRouter>({
+	links: [
+		httpBatchLink({
+			url: `${getServerUrl(env.NEXT_PUBLIC_SERVER_URL)}/trpc`,
+		}),
+	],
+});

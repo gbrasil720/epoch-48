@@ -2,7 +2,7 @@
 
 import { Badge } from "@epoch-48/ui/components/badge";
 import { Button } from "@epoch-48/ui/components/button";
-import { Empty } from "@epoch-48/ui/components/empty";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@epoch-48/ui/components/empty";
 import { Input } from "@epoch-48/ui/components/input";
 import { Skeleton } from "@epoch-48/ui/components/skeleton";
 import {
@@ -31,6 +31,7 @@ import { Suspense, useMemo, useState } from "react";
 import { trpc } from "@/utils/trpc";
 import ComparisonToggle from "./comparison-toggle";
 import DeltaBadge from "./delta-badge";
+import EpochSelector from "./epoch-selector";
 import { type EpochRow, NationDetailDialog } from "./nation-detail-dialog";
 import TierBoundaryRow from "./tier-boundary-row";
 
@@ -38,6 +39,7 @@ type ComparisonMode = "none" | "fifa" | "historical";
 
 interface RankingTableProps {
 	epochs: number[];
+	initialEpoch?: number;
 }
 
 function SkeletonRow() {
@@ -52,10 +54,10 @@ function SkeletonRow() {
 	);
 }
 
-function RankingTableInner({ epochs }: RankingTableProps) {
+function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 	const searchParams = useSearchParams();
 	const yearParam = searchParams.get("epoch");
-	const year = yearParam ? Number(yearParam) : (epochs[0] ?? 2022);
+	const year = yearParam ? Number(yearParam) : (initialEpoch ?? epochs[0] ?? 2022);
 
 	const { data: epochData, isLoading } = useQuery(
 		trpc.ranking.getEpoch.queryOptions({ year }),
@@ -157,7 +159,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 				accessorFn: (row) => row.fifaDelta,
 				size: 80,
 				cell: ({ getValue }) => (
-					<DeltaBadge value={(getValue() as number | null) ?? 0}>
+					<DeltaBadge value={getValue() as number | null}>
 						FIFA − Epoch
 					</DeltaBadge>
 				),
@@ -169,7 +171,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 				accessorFn: (row) => row.historicalDelta,
 				size: 100,
 				cell: ({ getValue }) => (
-					<DeltaBadge value={(getValue() as number | null) ?? 0}>
+					<DeltaBadge value={getValue() as number | null}>
 						Prev − Current
 					</DeltaBadge>
 				),
@@ -188,10 +190,9 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 		[],
 	);
 
-	// Compute column visibility based on URL mode param (no re-render needed from table)
+	// Compute column visibility based on URL mode param
 	const columnVisibility = useMemo((): Record<string, boolean> => {
-		const params = new URLSearchParams(window.location.search);
-		const currentMode = (params.get("mode") as ComparisonMode) || "none";
+		const currentMode = (searchParams.get("mode") as ComparisonMode) || "none";
 
 		const visibility: Record<string, boolean> = {};
 		for (const col of columns) {
@@ -213,12 +214,13 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 			}
 		}
 		return visibility;
-	}, [columns]);
+	}, [columns, searchParams]);
 
 	const table = useReactTable({
 		data: epochData ?? [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
+		getRowId: (row) => row.nation.code,
 		getFilteredRowModel: getFilteredRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		onSortingChange: setSorting,
@@ -306,6 +308,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 						</button>
 					)}
 				</div>
+				<EpochSelector epochs={epochs} />
 				<ComparisonToggle />
 				{isSorted && (
 					<Button variant="outline" size="sm" onClick={() => setSorting([])}>
@@ -333,7 +336,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 												header.column.columnDef.meta as
 													| { sticky?: string }
 													| undefined
-											)?.sticky && "sticky left-0 z-10 bg-background",
+											)?.sticky && "sticky left-0 z-20 bg-background",
 										)}
 									>
 										{header.isPlaceholder
@@ -349,17 +352,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 					))}
 				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows.length === 0 ? (
-						<TableRow>
-							<TableCell
-								colSpan={visibleColumnCount}
-								className="h-24 text-center"
-							>
-								No results.
-							</TableCell>
-						</TableRow>
-					) : (
-						table.getRowModel().rows.map((row, index) => {
+					{table.getRowModel().rows.map((row, index) => {
 							const showTierBoundary =
 								!isSorted && tierBoundaryIndex === index - 1;
 
@@ -369,6 +362,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 										<TierBoundaryRow
 											key={`tier-boundary-${index}`}
 											label="— Qualifiers Tier —"
+											colSpan={visibleColumnCount}
 										/>
 									)}
 									<TableRow
@@ -384,7 +378,7 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 														cell.column.columnDef.meta as
 															| { sticky?: string }
 															| undefined
-													)?.sticky && "sticky left-0 z-10 bg-background",
+													)?.sticky && "sticky left-0 z-20 bg-background",
 												)}
 											>
 												{flexRender(
@@ -396,10 +390,24 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 									</TableRow>
 								</>
 							);
-						})
-					)}
+						})}
 				</TableBody>
 			</Table>
+
+			{/* Empty state */}
+			{!isLoading && epochData.length === 0 && (
+				<Empty>
+					<EmptyMedia variant="icon">
+						<Search className="size-5" />
+					</EmptyMedia>
+					<EmptyHeader>
+						<EmptyTitle>No rankings found</EmptyTitle>
+						<EmptyDescription>
+							Try adjusting your search or filters.
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
+			)}
 
 			{/* Nation Detail Dialog */}
 			<NationDetailDialog
@@ -411,10 +419,10 @@ function RankingTableInner({ epochs }: RankingTableProps) {
 	);
 }
 
-export function RankingTable({ epochs }: RankingTableProps) {
+export function RankingTable({ epochs, initialEpoch }: RankingTableProps) {
 	return (
 		<Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-			<RankingTableInner epochs={epochs} />
+			<RankingTableInner epochs={epochs} initialEpoch={initialEpoch} />
 		</Suspense>
 	);
 }

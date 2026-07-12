@@ -1,12 +1,5 @@
 import "katex/dist/katex.min.css";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@epoch-48/ui/components/card";
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -18,365 +11,235 @@ import katex from "katex";
 
 export const metadata = {
 	title: "Methodology | Epoch 48",
-	description:
-		"The mathematical architecture behind the Epoch 48 ranking system",
+	description: "How the Epoch 48 ranking system works",
 };
 
 function Formula({ tex }: { tex: string }) {
+	const html = katex.renderToString(tex, {
+		throwOnError: false,
+		displayMode: true,
+	});
 	return (
-		<div className="my-4 overflow-x-auto rounded-lg bg-muted/50 p-4">
-			<div
-				// eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-				dangerouslySetInnerHTML={{
-					__html: katex.renderToString(tex, { displayMode: true }),
-				}}
-			/>
-		</div>
+		<div
+			className="overflow-x-auto my-4 rounded-md border bg-muted/30 p-4"
+			dangerouslySetInnerHTML={{ __html: html }}
+		/>
 	);
 }
 
 function Section({
 	title,
-	description,
+	children,
+	id,
+}: {
+	title: string;
+	children: React.ReactNode;
+	id?: string;
+}) {
+	return (
+		<section id={id} className="scroll-mt-16 mb-12">
+			<h2 className="mb-4 font-heading font-semibold text-2xl tracking-tight">
+				{title}
+			</h2>
+			<div className="max-w-prose space-y-4 text-muted-foreground leading-relaxed">
+				{children}
+			</div>
+		</section>
+	);
+}
+
+function SubSection({
+	title,
 	children,
 }: {
 	title: string;
-	description?: string;
 	children: React.ReactNode;
 }) {
 	return (
-		<Card className="mb-6">
-			<CardHeader>
-				<CardTitle>{title}</CardTitle>
-				{description && <CardDescription>{description}</CardDescription>}
-			</CardHeader>
-			<CardContent>{children}</CardContent>
-		</Card>
+		<section className="scroll-mt-16 mb-8">
+			<h3 className="mb-3 font-heading font-semibold text-xl tracking-tight">
+				{title}
+			</h3>
+			<div className="space-y-3 text-muted-foreground leading-relaxed">
+				{children}
+			</div>
+		</section>
 	);
 }
 
 export default function MethodologyPage() {
 	return (
-		<main className="container mx-auto px-4 py-6">
-			<div className="mb-8">
-				<h1 className="font-bold text-2xl tracking-tight">Methodology</h1>
+		<div className="container mx-auto max-w-3xl py-10 px-4">
+			<header className="mb-12">
+				<h1 className="font-heading font-bold text-3xl tracking-tight sm:text-4xl">
+					Methodology
+				</h1>
 				<p className="mt-2 text-muted-foreground">
-					The mathematical architecture behind the Epoch 48 ranking system.
+					How the Epoch 48 ranking system works.
 				</p>
-			</div>
+			</header>
 
-			{/* Executive Summary */}
-			<Section
-				title="Executive Summary"
-				description="The core problem and Epoch 48 premise"
-			>
-				<p className="mb-4 text-muted-foreground text-sm leading-relaxed">
-					The official FIFA world ranking relies on a customized variant of the
-					Elo rating system. While elegant for high-frequency, closed-ecosystem
-					environments like chess or eSports, Elo fails critically when applied
-					to international football due to two systemic flaws:{" "}
-					<strong>extreme match scarcity</strong> and{" "}
-					<strong>calendar manipulation ("farming")</strong>.
+			<nav className="mb-10 rounded-lg border bg-muted/30 p-4">
+				<p className="mb-2 font-medium text-sm">Contents</p>
+				<ul className="space-y-1 text-sm">
+					{[
+						["Philosophy", "#philosophy"],
+						["Tier 1: World Cup & Continental", "#tier-1"],
+						["Tier 2: Qualifiers", "#tier-2"],
+						["Score Formula", "#formula"],
+						["Continental Bonus", "#bonus"],
+						["Q-Index", "#q-index"],
+						["Tiebreakers", "#tiebreakers"],
+						["FIFA Comparison", "#fifa"],
+					].map(([label, href]) => (
+						<li key={href}>
+							<a
+								href={href}
+								className="text-accent-green hover:underline"
+							>
+								{label}
+							</a>
+						</li>
+					))}
+				</ul>
+			</nav>
+
+			<Section title="Philosophy" id="philosophy">
+				<p>
+					Epoch 48 ranks national football teams based on <em>meaningful</em>{" "}
+					competitive performance. Unlike Elo-based systems that update after
+					every match, Epoch only counts results from official tournaments —
+					World Cup finals, continental championships, and their qualifying
+					campaigns.
 				</p>
-				<p className="mb-4 text-muted-foreground text-sm leading-relaxed">
-					National teams play an average of only 10–15 matches per year, a
-					sample size mathematically insufficient for an Elo-based probability
-					algorithm to converge on a true skill representation. Furthermore,
-					member associations can actively exploit the algorithm by scheduling
-					low-risk friendly matches against severely weaker opponents to inflate
-					their point totals while avoiding high-risk encounters.
-				</p>
-				<p className="text-muted-foreground text-sm leading-relaxed">
-					<strong>Epoch 48</strong> operates on an unassailable premise:{" "}
-					<strong>
-						The FIFA World Cup is the only absolute gauge of global football
-						strength.
-					</strong>{" "}
-					Performance under the absolute pressure of the world&apos;s biggest
-					stage dictates historical standing. Friendly matches carry zero
-					weight. The global hierarchy is frozen and sustained over fixed 4-year
-					cycles, eliminating short-term volatility and artificial point
-					inflation.
+				<p>
+					The system is designed to answer a simple question: <em>
+						which nations perform best when it matters most?
+					</em>{" "}
+					Friendlies, exhibition matches, and low-stakes fixtures are excluded
+					by design.
 				</p>
 			</Section>
 
-			{/* Two-Tier System */}
-			<Section
-				title="Two-Tier System"
-				description="A segregated ranking ecosystem"
-			>
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="rounded-lg bg-muted/50 p-4">
-						<h4 className="mb-2 font-semibold">Tier 1 — Global Stage</h4>
-						<p className="text-muted-foreground text-sm">
-							Ranks 1–48. Exclusive to the 48 nations that qualified for the
-							World Cup final tournament. Ranked by Epoch Score (ES). Upon
-							qualification, a Tier 1 nation is mathematically guaranteed not to
-							drop below rank 48 for the duration of that cycle.
-						</p>
-					</div>
-					<div className="rounded-lg bg-muted/50 p-4">
-						<h4 className="mb-2 font-semibold">Tier 2 — Qualifiers Tier</h4>
-						<p className="text-muted-foreground text-sm">
-							Ranks 49–211. All member associations that failed to qualify for
-							the final stage. Ranked by Q-Index from their qualification
-							campaign. Ensures competitive gamification and developmental
-							tracking for emerging nations.
-						</p>
-					</div>
-				</div>
-				<p className="mt-4 text-muted-foreground text-sm">
-					An impassable logical boundary separates the two tiers, rendered as a
-					visual barrier row in the ranking table.
+			<Section title="Tier 1: World Cup & Continental" id="tier-1">
+				<p>
+					Tier 1 includes all nations that participate in a World Cup final
+					tournament or a continental championship (Euros, Copa América, AFCON,
+					Asian Cup, Olympic football). These are the highest-stakes
+					competitions in international football.
+				</p>
+				<p>
+					Each nation's score is computed from their tournament performance
+					using a formula that rewards deep runs, goal difference, and clean
+					disciplinary records.
 				</p>
 			</Section>
 
-			{/* Epoch Concept */}
-			<Section
-				title="The Epoch Concept"
-				description="Fixed 4-year cycles anchored to World Cups"
-			>
-				<ul className="list-inside list-disc space-y-2 text-muted-foreground text-sm">
+			<Section title="Tier 2: Qualifiers" id="tier-2">
+				<p>
+					Tier 2 includes nations that did not reach a final tournament but
+					competed in qualifying campaigns. Their performance is measured using
+					the Q-Index, which normalizes points earned against the maximum
+					possible.
+				</p>
+			</Section>
+
+			<Section title="Score Formula" id="formula">
+				<p>The core scoring formula for Tier 1 nations:</p>
+				<Formula tex={`S = P \\times \\frac{G_{\\text{diff}} + 15}{15} \\times \\left(1 + 0.01 \\cdot G_{\\text{for}}\\right) \\times \\left(1 - 0.01 \\cdot (Y + 2R)\\right)`} />
+				<p>Where:</p>
+				<ul className="list-inside list-disc space-y-1 pl-4">
 					<li>
-						<strong>Elite Standings Freeze:</strong> Tier 1 rankings are updated
-						exactly <strong>once every four years</strong>, precisely 24 hours
-						following the conclusion of the World Cup Final match.
+						<span className="font-mono text-sm">P</span> — points gained in the
+						tournament
 					</li>
 					<li>
-						<strong>Cycle Stability:</strong> If a nation finishes as World Cup
-						Runner-up, it remains the absolute No. 2 team in the world for the
-						next four years, entirely independent of subsequent friendly matches
-						or regional qualifiers.
+						<span className="font-mono text-sm">G_diff</span> — goal difference
+						(clamped to a minimum of -15)
 					</li>
 					<li>
-						<strong>Tier 2 Dynamics:</strong> Standings within the Qualifiers
-						Tier fluctuate periodically throughout the cycle as continental
-						qualifiers progress, serving as a live indicator of qualification
-						trajectory.
+						<span className="font-mono text-sm">G_for</span> — goals scored
+					</li>
+					<li>
+						<span className="font-mono text-sm">Y</span> — yellow cards received
+					</li>
+					<li>
+						<span className="font-mono text-sm">R</span> — red cards received
 					</li>
 				</ul>
 			</Section>
 
-			{/* Epoch Score */}
-			<Section
-				title="Epoch Score (ES)"
-				description="The master formula for Tier 1 rankings"
-			>
-				<p className="mb-2 text-muted-foreground text-sm">
-					Every nation&apos;s performance is translated into a standardized
-					metric capped at <strong>100.00</strong>. The final position of any
-					elite team is determined by the Epoch Score.
+			<Section title="Continental Bonus" id="bonus">
+				<p>
+					A small bonus is applied to compensate for the relative competitive
+					imbalance between confederations. Nations from smaller confederations
+					receive a modest multiplier to account for the difficulty of their
+					path.
 				</p>
-				<Formula tex={"ES = P_f + \\frac{P_d}{100}"} />
-				<ul className="list-inside list-disc space-y-1 text-muted-foreground text-sm">
+			</Section>
+
+			<Section title="Q-Index" id="q-index">
+				<p>The Q-Index for Tier 2 (qualifier-only) nations:</p>
+				<Formula tex={`Q = \\frac{P_{\\text{earned}}}{P_{\\text{max}}} \\times \\frac{G_{\\text{diff}} + 10}{10}`} />
+				<p>Where:</p>
+				<ul className="list-inside list-disc space-y-1 pl-4">
 					<li>
-						<strong>P_f</strong> — Phase Base Weight: The absolute macro-integer
-						designated by the tournament round achieved.
+						<span className="font-mono text-sm">P_earned</span> — points earned
+						in qualifying
 					</li>
 					<li>
-						<strong>P_d</strong> — Performance Tie-Breaker: The micro-decimal
-						component calculated from technical statistics to differentiate
-						teams eliminated in the same phase.
+						<span className="font-mono text-sm">P_max</span> — maximum possible
+						points
+					</li>
+					<li>
+						<span className="font-mono text-sm">G_diff</span> — goal difference
+						in qualifying
 					</li>
 				</ul>
 			</Section>
 
-			{/* Phase Base Weight */}
-			<Section
-				title="Phase Base Weight (P_f)"
-				description="Structural gatekeeper — a later-phase team can never be passed by an earlier-phase team"
-			>
+			<Section title="Tiebreakers" id="tiebreakers">
+				<p>
+					When two or more nations share the same Epoch score, the tie is
+					broken by FIFA ranking (lower rank wins). If FIFA data is unavailable,
+					the tie stands.
+				</p>
+			</Section>
+
+			<Section title="FIFA Comparison" id="fifa">
+				<p>
+					Epoch rankings can be compared against the official FIFA/FIGL
+					rankings. The delta column shows the difference: a positive value
+					means the nation is ranked higher by FIFA than by Epoch, and
+					negative means the opposite.
+				</p>
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Final Tournament Phase Achieved</TableHead>
-							<TableHead className="text-right">Base Value (P_f)</TableHead>
+							<TableHead>Delta</TableHead>
+							<TableHead>Meaning</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{[
-							["World Cup Champion (1st)", 100],
-							["World Cup Runner-up (2nd)", 95],
-							["Third Place Playoff Winner (3rd)", 90],
-							["Third Place Playoff Loser (4th)", 85],
-							["Quarter-Finals (5th–8th)", 75],
-							["Round of 16 (9th–16th)", 60],
-							["Round of 32 (17th–32nd)", 40],
-							["Group Stage (33rd–48th)", 25],
-						].map(([phase, value]) => (
-							<TableRow key={phase as string}>
-								<TableCell>{phase as string}</TableCell>
-								<TableCell className="text-right font-medium font-mono">
-									{value as number}
-								</TableCell>
-							</TableRow>
-						))}
+						<TableRow>
+							<TableCell className="font-mono text-sm">
+								<span className="text-destructive">negative</span>
+							</TableCell>
+							<TableCell>
+								Epoch ranks this nation <em>higher</em> than FIFA
+							</TableCell>
+						</TableRow>
+						<TableRow>
+							<TableCell className="font-mono text-sm">
+								<span className="text-green-600">positive</span>
+							</TableCell>
+							<TableCell>
+								FIFA ranks this nation <em>higher</em> than Epoch
+							</TableCell>
+						</TableRow>
 					</TableBody>
 				</Table>
-				<p className="mt-4 text-muted-foreground text-sm">
-					The World Cup Champion automatically receives an absolute ES of
-					100.00, rendering fractional calculations unnecessary.
-				</p>
 			</Section>
-
-			{/* Performance Tie-Breaker */}
-			<Section
-				title="Performance Tie-Breaker (P_d)"
-				description="Cascade tie-breaker for teams eliminated in the same phase"
-			>
-				<Formula tex={"P_d = (PPM \\times 10) + (GD \\times 2) + GS + FP"} />
-				<ul className="mt-4 list-inside list-disc space-y-1 text-muted-foreground text-sm">
-					<li>
-						<strong>PPM (Points Per Match):</strong> Total tournament points
-						earned divided by total matches played. A standard win yields 3
-						points, a draw yields 1 point, and a loss yields 0 points.
-						Multiplied by 10 to establish points-earning efficiency as the
-						primary tie-breaker.
-					</li>
-					<li>
-						<strong>GD (Goal Difference):</strong> Total goals scored minus
-						total goals conceded across the whole tournament. Multiplied by 2.
-					</li>
-					<li>
-						<strong>GS (Goals Scored):</strong> Brute offensive output.
-						Recompenses pro-active, attacking football without dynamic
-						multipliers.
-					</li>
-					<li>
-						<strong>FP (Fair Play Modifier):</strong> A strict disciplinary
-						deduction.
-					</li>
-				</ul>
-
-				<p className="mt-4 font-medium text-sm">Fair Play Modifier:</p>
-				<Formula tex={"FP = -((C_y \\times 0.2) + (C_r \\times 1.0))"} />
-				<p className="mt-2 text-muted-foreground text-sm">
-					Where <em>C_y</em> = total Yellow Cards and <em>C_r</em> = total Red
-					Cards received during the final tournament. Matches decided via
-					penalty shootouts are recorded as draws for the calculation of PPM,
-					GD, and GS.
-				</p>
-			</Section>
-
-			{/* Continental Bonus */}
-			<Section
-				title="Continental Bonus (B_c)"
-				description="Mid-Cycle Modifier with safeguards"
-			>
-				<p className="mb-4 text-muted-foreground text-sm">
-					Major regional championships (UEFA Euro, CONMEBOL Copa América, CAF
-					AFCON, AFC Asian Cup, CONCACAF Gold Cup, OFC Nations Cup) are
-					integrated into the system using a highly calibrated Mid-Cycle
-					Modifier. Two computational safeguards prevent regional inflation.
-				</p>
-
-				<h4 className="mt-4 mb-2 font-semibold">
-					Safeguard A: Glass Ceiling Constraint
-				</h4>
-				<p className="mb-2 text-muted-foreground text-sm">
-					The Continental Bonus can{" "}
-					<strong>
-						only be injected into the fractional decimal portion (P_d)
-					</strong>{" "}
-					of the master formula.
-				</p>
-				<Formula tex={"ES = P_f + \\frac{P_d + B_c}{100}"} />
-				<p className="mt-2 text-muted-foreground text-sm">
-					If the combined sum of (P_d + B_c) equals or exceeds 100.00, the
-					system enforces a strict cap, clamping the decimal output to a maximum
-					of <strong>0.99</strong>. A nation eliminated in the Round of 16 (P_f
-					= 60) can win their regional tournament and reach{" "}
-					<strong>60.99</strong>, but can <strong>never</strong> breach the next
-					phase threshold (P_f = 75).
-				</p>
-
-				<h4 className="mt-6 mb-2 font-semibold">
-					Safeguard B: Confederation Factor (C_f)
-				</h4>
-				<p className="mb-2 text-muted-foreground text-sm">
-					Winning a regional cup in a highly competitive continent is
-					mathematically harder than doing so in a weaker region. The C-Factor
-					is a dynamic multiplier computed entirely from data from the preceding
-					World Cup:
-				</p>
-				<Formula
-					tex={
-						"C_f = \\frac{\\text{Nations from confederation advancing past Group Stage}}{\\text{Total nations from confederation at World Cup}}"
-					}
-				/>
-				<p className="mt-4 text-muted-foreground text-sm">
-					The final Continental Bonus is calculated as:
-				</p>
-				<Formula
-					tex={
-						"B_c = \\bigl[(PPM_{\\text{continental}} \\times 5) + (GD_{\\text{continental}} \\times 1)\\bigr] \\times C_f"
-					}
-				/>
-			</Section>
-
-			{/* Q-Index */}
-			<Section
-				title="Q-Index"
-				description="Tier 2 metric for nations that did not qualify"
-			>
-				<p className="mb-2 text-muted-foreground text-sm">
-					For the lower tier (ranks 49–211), the formula shifts away from
-					tournament brackets to accommodate the wildly divergent qualification
-					formats across confederations (e.g. CONMEBOL&apos;s 18-match single
-					group vs. UEFA&apos;s shorter multi-group stages).
-				</p>
-				<Formula
-					tex={
-						"QIndex = \\left(\\frac{P_{earned}}{P_{max}} \\times 100\\right) + (GD_{avg} \\times 0.5)"
-					}
-				/>
-				<ul className="mt-4 list-inside list-disc space-y-1 text-muted-foreground text-sm">
-					<li>
-						<strong>P_earned:</strong> Total points accumulated during the
-						active qualification cycle.
-					</li>
-					<li>
-						<strong>P_max:</strong> Maximum possible points the nation could
-						have mathematically achieved given the number of fixtures in their
-						specific group layout. Normalizes the percentage to treat varying
-						match quantities equitably.
-					</li>
-					<li>
-						<strong>GD_avg:</strong> Total qualification Goal Difference divided
-						by matches played. Kept at a low weight multiplier (0.5) to prevent
-						disproportionate inflation from blowout matches against
-						micro-nations.
-					</li>
-				</ul>
-			</Section>
-
-			{/* Comparison Metrics */}
-			<Section
-				title="Comparison Metrics"
-				description="Validation and historical tracking"
-			>
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="rounded-lg bg-muted/50 p-4">
-						<h4 className="mb-2 font-semibold">Reality Check (vs FIFA)</h4>
-						<p className="text-muted-foreground text-sm">
-							Computes a dynamic differential (Δ) mapping the variance between
-							the Epoch Score ranking and the standard FIFA ranking,
-							highlighting the artificial noise embedded in the Elo-based
-							official system.
-						</p>
-					</div>
-					<div className="rounded-lg bg-muted/50 p-4">
-						<h4 className="mb-2 font-semibold">
-							Historical Evolution (vs Historical)
-						</h4>
-						<p className="text-muted-foreground text-sm">
-							Queries previous frozen Epoch datasets to provide a generational
-							trajectory visualization, tracking exactly how many positions a
-							squad advanced or declined across discrete four-year eras.
-						</p>
-					</div>
-				</div>
-			</Section>
-		</main>
+		</div>
 	);
 }
