@@ -14,10 +14,12 @@
 	},
 	"dependencies": {
 		"@epoch-48/db": "workspace:*",
+		"@epoch-48/epoch-engine": "workspace:*",
 		"@epoch-48/env": "workspace:*",
 		"@trpc/client": "catalog:",
 		"@trpc/server": "catalog:",
 		"dotenv": "catalog:",
+		"drizzle-orm": "^0.45.2",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
