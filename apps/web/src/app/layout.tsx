@@ -16,8 +16,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "epoch-48",
-	description: "epoch-48",
+	title: "Epoch — Global Football Rankings",
+	description:
+		"An objective, Elo-based ranking of national football teams. Updated every FIFA international window with transparent methodology and open-source code.",
+	metadataBase: new URL("https://epoch.gg"),
+	openGraph: {
+		title: "Epoch — Global Football Rankings",
+		description:
+			"An objective, Elo-based ranking of national football teams. Updated every FIFA international window.",
+		url: "https://epoch.gg",
+		siteName: "Epoch",
+		locale: "en_US",
+		type: "website",
+	},
+	verification: {
+		google: "",
+	},
 };
 
 export default function RootLayout({

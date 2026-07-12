@@ -314,6 +314,15 @@ export const rankingRouter = router({
 			return getEpochInternal(input.year);
 		}),
 
+	getTop: publicProcedure
+		.input(z.object({ year: z.number().optional(), limit: z.number().optional() }))
+		.query(async ({ input }): Promise<EpochRow[]> => {
+			const year = input.year ?? 2022;
+			const limit = input.limit ?? 10;
+			const all = await getEpochInternal(year);
+			return all.slice(0, limit);
+		}),
+
 	listEpochs: publicProcedure.query(async (): Promise<number[]> => {
 		const tournamentsRows = await db.query.tournaments.findMany({
 			where: (t) => eq(t.isCompleted, true),

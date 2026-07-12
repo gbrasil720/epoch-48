@@ -3,11 +3,12 @@ import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface DeltaBadgeProps {
-	value: number;
+	value: number | null;
 	children?: ReactNode;
 }
 
 export default function DeltaBadge({ value, children }: DeltaBadgeProps) {
+	if (value === null || value === undefined) return null;
 	const formatted = value >= 0 ? `+${value}` : `${value}`;
 	const Icon = value >= 0 ? ArrowUpIcon : ArrowDownIcon;
 	const variant =

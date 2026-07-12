@@ -216,7 +216,7 @@ export default function ComponentsShowcase() {
 							<TableCell>Argentina</TableCell>
 							<TableCell>98.50</TableCell>
 						</TableRow>
-						<TierBoundaryRow label="Tier 1 / Tier 2 Boundary" />
+						<TierBoundaryRow label="Tier 1 / Tier 2 Boundary" colSpan={3} />
 						<TableRow>
 							<TableCell>49</TableCell>
 							<TableCell>Team 49</TableCell>
