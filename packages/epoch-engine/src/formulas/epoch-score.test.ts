@@ -184,35 +184,61 @@ describe("epochScore", () => {
 		expect(epochScore(props)).toBe(60.304);
 	});
 
-	it("2022 QF tie-breaker: England ES = 75.50", () => {
+	// Agent Checkpoint 2 (validation.md): real 2022 QF props, no fabricated B_c
+	it("2022 QF Checkpoint 2: England ES = 75.508", () => {
+		// England 2022 QF: 5 games, 10 pts, +9 GD, 13 GS, 1 Yellow
+		// ppm = 2, fp = -0.2
+		// pd = (2*10) + (9*2) + 13 + (-0.2) = 50.8
+		// ES = 75 + 50.8/100 = 75.508
 		const props: EpochScoreProps = {
 			tournamentPhase: { name: TournamentPhaseName.QUARTER_FINALS },
-			pointsGained: 7,
-			gamesPlayed: 6,
-			goalsDiff: 5,
-			goalsFor: 10,
+			pointsGained: 10,
+			gamesPlayed: 5,
+			goalsDiff: 9,
+			goalsFor: 13,
 			cardsReceived: [
-				{ color: "yellow", count: 7 },
+				{ color: "yellow", count: 1 },
 				{ color: "red", count: 0 },
 			],
 		};
-		// pd = 30.27, need ES = 75.50 → bc = 19.73
-		expect(epochScore(props, 19.73)).toBe(75.5);
+		expect(epochScore(props)).toBe(75.508);
 	});
 
-	it("2022 QF tie-breaker: Brazil ES = 75.36", () => {
+	it("2022 QF Checkpoint 2: Brazil (doc 10 pts) ES = 75.368", () => {
+		// Brazil 2022 QF (validation.md): 5 games, 10 pts, +5 GD, 8 GS, 6 Yellows
+		// ppm = 2, fp = -1.2
+		// pd = 20 + 10 + 8 - 1.2 = 36.8
+		// ES = 75 + 0.368 = 75.368
 		const props: EpochScoreProps = {
 			tournamentPhase: { name: TournamentPhaseName.QUARTER_FINALS },
-			pointsGained: 7,
-			gamesPlayed: 6,
-			goalsDiff: 3,
+			pointsGained: 10,
+			gamesPlayed: 5,
+			goalsDiff: 5,
 			goalsFor: 8,
 			cardsReceived: [
-				{ color: "yellow", count: 5 },
+				{ color: "yellow", count: 6 },
 				{ color: "red", count: 0 },
 			],
 		};
-		// pd = 24.67, need ES = 75.36 → bc = 11.33
-		expect(epochScore(props, 11.33)).toBe(75.36);
+		expect(epochScore(props)).toBe(75.368);
+	});
+
+	it("2022 QF seed CSV Brazil (9 pts) ES = 75.348", () => {
+		// world_cup_2022_stats.csv: BRA,5,9,8,5,6,0
+		// ppm = 1.8, fp = -1.2
+		// pd = 18 + 10 + 8 - 1.2 = 34.8
+		// ES = 75.348
+		const props: EpochScoreProps = {
+			tournamentPhase: { name: TournamentPhaseName.QUARTER_FINALS },
+			pointsGained: 9,
+			gamesPlayed: 5,
+			goalsDiff: 5,
+			goalsFor: 8,
+			cardsReceived: [
+				{ color: "yellow", count: 6 },
+				{ color: "red", count: 0 },
+			],
+		};
+		expect(epochScore(props)).toBe(75.348);
 	});
 });

@@ -1,5 +1,9 @@
 import type { EpochScoreProps } from "../typings";
 
+/**
+ * Continental Bonus (B_c):
+ * B_c = ((PPM_cont × 5) + (GD_cont × 1)) × C_Factor
+ */
 export function continentalBonus(
 	props: EpochScoreProps,
 	cFactor: number,
@@ -9,7 +13,7 @@ export function continentalBonus(
 	const ppm = props.pointsGained / props.gamesPlayed;
 	const gd = props.goalsDiff;
 
-	const rawBonus = ppm * 5 * gd;
+	const rawBonus = ppm * 5 + gd * 1;
 	const finalBonus = rawBonus * cFactor;
 
 	return Number(finalBonus.toFixed(2));

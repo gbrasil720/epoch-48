@@ -391,7 +391,7 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 								{showTierBoundary && (
 									<TierBoundaryRow
 										key={`tier-boundary-${index}`}
-										label="— Qualifiers Tier —"
+										label="--- Tier Boundary --- The Qualifiers Tier"
 										colSpan={visibleColumnCount}
 									/>
 								)}
