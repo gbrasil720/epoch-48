@@ -10,10 +10,10 @@ export default function TierBoundaryRow({
 	colSpan,
 }: TierBoundaryRowProps) {
 	return (
-		<TableRow className="bg-muted/50 font-medium">
+		<TableRow className="border-border border-t-2 border-double bg-muted/30">
 			<TableCell
 				colSpan={colSpan}
-				className="border-none py-1 text-center text-muted-foreground text-xs"
+				className="border-none py-2 text-center font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest"
 			>
 				{label}
 			</TableCell>

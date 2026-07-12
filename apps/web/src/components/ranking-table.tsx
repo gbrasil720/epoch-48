@@ -2,7 +2,6 @@
 
 import { Badge } from "@epoch-48/ui/components/badge";
 import { Button } from "@epoch-48/ui/components/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@epoch-48/ui/components/empty";
 import { Input } from "@epoch-48/ui/components/input";
 import { Skeleton } from "@epoch-48/ui/components/skeleton";
 import {
@@ -24,14 +23,17 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
+import { motion } from "framer-motion";
 import { ArrowUpDown, Search, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Fragment, Suspense, useMemo, useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 import { trpc } from "@/utils/trpc";
 import ComparisonToggle from "./comparison-toggle";
 import DeltaBadge from "./delta-badge";
 import EpochSelector from "./epoch-selector";
+import Flag from "./flag";
 import { type EpochRow, NationDetailDialog } from "./nation-detail-dialog";
 import TierBoundaryRow from "./tier-boundary-row";
 
@@ -57,7 +59,9 @@ function SkeletonRow() {
 function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 	const searchParams = useSearchParams();
 	const yearParam = searchParams.get("epoch");
-	const year = yearParam ? Number(yearParam) : (initialEpoch ?? epochs[0] ?? 2022);
+	const year = yearParam
+		? Number(yearParam)
+		: (initialEpoch ?? epochs[0] ?? 2022);
 
 	const { data: epochData, isLoading } = useQuery(
 		trpc.ranking.getEpoch.queryOptions({ year }),
@@ -66,6 +70,7 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 	const [searchText, setSearchText] = useState("");
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [selectedRow, setSelectedRow] = useState<EpochRow | null>(null);
+	const reducedMotion = useReducedMotion();
 
 	const isSorted = sorting.length > 0;
 
@@ -85,9 +90,20 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 				),
 				accessorFn: (row) => row.rank,
 				size: 60,
-				cell: ({ getValue }) => (
-					<span className="font-bold tabular-nums">{getValue() as number}</span>
-				),
+				cell: ({ row: cellRow }) => {
+					const rank = cellRow.original.rank;
+					return (
+						<span
+							className={cn(
+								"font-bold tabular-nums transition-colors group-hover:text-accent-green",
+								rank === 1 &&
+									"font-black text-champion-gold group-hover:text-champion-gold",
+							)}
+						>
+							{String(rank).padStart(2, "0")}
+						</span>
+					);
+				},
 				meta: { sticky: true },
 			},
 			{
@@ -98,7 +114,11 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 					const nation = cellRow.original.nation;
 					return (
 						<div className="flex items-center gap-2">
-							<span className="text-lg">{nation.flag}</span>
+							<Flag
+								code={nation.code}
+								emoji={nation.flag ?? undefined}
+								size="sm"
+							/>
 							<div>
 								<p className="font-medium">{nation.name}</p>
 								<p className="text-muted-foreground text-xs">{nation.code}</p>
@@ -259,10 +279,18 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>#</TableHead>
-							<TableHead>Nation</TableHead>
-							<TableHead>Score</TableHead>
-							<TableHead>Phase</TableHead>
+							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+								#
+							</TableHead>
+							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+								Nation
+							</TableHead>
+							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+								Score
+							</TableHead>
+							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+								Phase
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -277,12 +305,11 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 
 	if (!epochData || epochData.length === 0) {
 		return (
-			<Empty title="No Rankings">
-				<Search className="h-8 w-8 text-muted-foreground" />
+			<div className="flex min-h-[200px] items-center justify-center rounded-lg border bg-card p-6 text-center">
 				<p className="text-muted-foreground text-sm">
 					No ranking data available for this epoch.
 				</p>
-			</Empty>
+			</div>
 		);
 	}
 
@@ -331,7 +358,7 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 									<TableHead
 										key={header.id}
 										className={cn(
-											"select-none",
+											"select-none font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest",
 											(
 												header.column.columnDef.meta as
 													| { sticky?: string }
@@ -353,22 +380,35 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 				</TableHeader>
 				<TableBody>
 					{table.getRowModel().rows.map((row, index) => {
-							const showTierBoundary =
-								!isSorted && tierBoundaryIndex === index - 1;
+						const showTierBoundary =
+							!isSorted && tierBoundaryIndex === index - 1;
+						const original = row.original as EpochRow;
+						const isTier1 = original.tier === 1;
+						const isChampion = original.rank === 1;
 
-							return (
-								<>
-									{showTierBoundary && (
-										<TierBoundaryRow
-											key={`tier-boundary-${index}`}
-											label="— Qualifiers Tier —"
-											colSpan={visibleColumnCount}
-										/>
-									)}
-									<TableRow
+						return (
+							<Fragment key={`${row.id}-${index}`}>
+								{showTierBoundary && (
+									<TierBoundaryRow
+										key={`tier-boundary-${index}`}
+										label="— Qualifiers Tier —"
+										colSpan={visibleColumnCount}
+									/>
+								)}
+								{isTier1 && !reducedMotion ? (
+									<motion.tr
 										key={row.id}
-										className="cursor-pointer"
-										onClick={() => setSelectedRow(row.original as EpochRow)}
+										layout
+										initial={{ opacity: 0, y: 8 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: index * 0.02 }}
+										className={cn(
+											"group cursor-pointer",
+											"hover:bg-muted/50",
+											isChampion &&
+												"border-l-3 border-l-champion-gold bg-champion-gold-muted/20 hover:bg-champion-gold-muted/30",
+										)}
+										onClick={() => setSelectedRow(original)}
 									>
 										{row.getVisibleCells().map((cell) => (
 											<TableCell
@@ -378,7 +418,41 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 														cell.column.columnDef.meta as
 															| { sticky?: string }
 															| undefined
-													)?.sticky && "sticky left-0 z-20 bg-background",
+													)?.sticky &&
+														"sticky left-0 z-20 bg-background group-hover:bg-muted/50",
+													isChampion && "bg-champion-gold-muted/20",
+												)}
+											>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)}
+											</TableCell>
+										))}
+									</motion.tr>
+								) : (
+									<TableRow
+										key={row.id}
+										className={cn(
+											"group cursor-pointer transition-colors",
+											"hover:bg-muted/50",
+											!isTier1 && "text-muted-foreground/80",
+											isChampion &&
+												"border-l-3 border-l-champion-gold bg-champion-gold-muted/20 hover:bg-champion-gold-muted/30",
+										)}
+										onClick={() => setSelectedRow(original)}
+									>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell
+												key={cell.id}
+												className={cn(
+													(
+														cell.column.columnDef.meta as
+															| { sticky?: string }
+															| undefined
+													)?.sticky &&
+														"sticky left-0 z-20 bg-background group-hover:bg-muted/50",
+													isChampion && "bg-champion-gold-muted/20",
 												)}
 											>
 												{flexRender(
@@ -388,26 +462,12 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 											</TableCell>
 										))}
 									</TableRow>
-								</>
-							);
-						})}
+								)}
+							</Fragment>
+						);
+					})}
 				</TableBody>
 			</Table>
-
-			{/* Empty state */}
-			{!isLoading && epochData.length === 0 && (
-				<Empty>
-					<EmptyMedia variant="icon">
-						<Search className="size-5" />
-					</EmptyMedia>
-					<EmptyHeader>
-						<EmptyTitle>No rankings found</EmptyTitle>
-						<EmptyDescription>
-							Try adjusting your search or filters.
-						</EmptyDescription>
-					</EmptyHeader>
-				</Empty>
-			)}
 
 			{/* Nation Detail Dialog */}
 			<NationDetailDialog

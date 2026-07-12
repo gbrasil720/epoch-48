@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@epoch-48/api": "workspace:*",
+		"@epoch-48/epoch-engine": "workspace:*",
 		"@epoch-48/env": "workspace:*",
 		"@epoch-48/ui": "workspace:*",
 		"@swc/helpers": "^0.5.23",
