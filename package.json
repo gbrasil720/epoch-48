@@ -41,8 +41,10 @@
 	"dependencies": {
 		"@epoch-48/env": "workspace:*",
 		"csv-parse": "^7.0.1",
+		"cuelume": "^0.1.0",
 		"dotenv": "catalog:",
 		"framer-motion": "^12.42.2",
+		"reicon-react": "^1.1.2",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

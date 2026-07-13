@@ -44,7 +44,7 @@ function ToggleGroup<Value extends string = string>({
 			data-orientation={orientation}
 			style={{ "--gap": spacing } as React.CSSProperties}
 			className={cn(
-				"group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-none data-vertical:flex-col data-vertical:items-stretch data-[size=sm]:rounded-none",
+				"group/toggle-group inline-flex w-fit items-center gap-[--spacing(var(--gap))] bg-muted/50 p-1 data-vertical:flex-col data-vertical:items-stretch",
 				className,
 			)}
 			multiple={multiple}
@@ -65,21 +65,23 @@ function ToggleGroupItem({
 	variant = "default",
 	size = "default",
 	...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
-	const context = React.useContext(ToggleGroupContext);
+}: TogglePrimitive.Props &
+	VariantProps<typeof toggleVariants> & {
+		children?: React.ReactNode;
+	}) {
+	const context = React.use(ToggleGroupContext);
 
 	return (
 		<TogglePrimitive
 			data-slot="toggle-group-item"
-			data-variant={context.variant || variant}
-			data-size={context.size || size}
-			data-spacing={context.spacing}
+			data-variant={context.variant ?? variant}
+			data-size={context.size ?? size}
 			className={cn(
-				"shrink-0 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-[spacing=0]/toggle-group:px-2 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1.5 group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-none group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-none",
 				toggleVariants({
-					variant: context.variant || variant,
-					size: context.size || size,
+					variant: context.variant ?? variant,
+					size: context.size ?? size,
 				}),
+				"rounded-lg aria-pressed:bg-transparent data-[state=on]:bg-popover data-[state=on]:shadow-sm",
 				className,
 			)}
 			{...props}

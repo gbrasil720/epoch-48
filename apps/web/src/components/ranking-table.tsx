@@ -24,7 +24,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { motion } from "framer-motion";
-import { ArrowUpDown, Search, X } from "lucide-react";
+import { SortV, Search, XCircle } from "reicon-react";
 import { useSearchParams } from "next/navigation";
 import { Fragment, Suspense, useMemo, useState } from "react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -33,7 +33,7 @@ import { trpc } from "@/utils/trpc";
 import ComparisonToggle from "./comparison-toggle";
 import DeltaBadge from "./delta-badge";
 import EpochSelector from "./epoch-selector";
-import Flag from "./flag";
+import { Flag } from "./flag";
 import { type EpochRow, NationDetailDialog } from "./nation-detail-dialog";
 import TierBoundaryRow from "./tier-boundary-row";
 
@@ -49,7 +49,7 @@ function SkeletonRow() {
 		<TableRow>
 			{Array.from({ length: 5 }).map((_, i) => (
 				<TableCell key={i}>
-					<Skeleton className="h-4 w-24" />
+					<Skeleton className="h-4 w-20" />
 				</TableCell>
 			))}
 		</TableRow>
@@ -79,23 +79,26 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 			{
 				id: "rank",
 				header: ({ column }) => (
-					<button
-						type="button"
-						className="flex items-center gap-1"
+					<Button
+						variant="ghost"
+						size="sm"
+						className="-z-10 -ml-2 h-auto gap-1 p-0 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+						data-cuelume-press="press"
+						data-cuelume-release="release"
 					>
 						#
-						<ArrowUpDown className="h-3 w-3" />
-					</button>
+						<SortV size={12} />
+					</Button>
 				),
 				accessorFn: (row) => row.rank,
-				size: 60,
+				size: 56,
 				cell: ({ row: cellRow }) => {
 					const rank = cellRow.original.rank;
 					return (
 						<span
 							className={cn(
-								"font-bold tabular-nums transition-colors group-hover:text-accent-green",
+								"font-bold font-mono tabular-nums transition-colors group-hover:text-brand",
 								rank === 1 &&
 									"font-black text-champion-gold group-hover:text-champion-gold",
 							)}
@@ -108,23 +111,39 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 			},
 			{
 				id: "nation",
-				header: "Nation",
+				header: ({ column }) => (
+					<Button
+						variant="ghost"
+						size="sm"
+						className="-z-10 -ml-2 h-auto gap-1 p-0 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]"
+						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+						data-cuelume-press="press"
+						data-cuelume-release="release"
+					>
+						Nation
+						<SortV size={12} />
+					</Button>
+				),
 				accessorFn: (row) => row.nation.name,
 				cell: ({ row: cellRow }) => {
 					const nation = cellRow.original.nation;
 					return (
-						<div className="flex items-center gap-2">
+						<div className="flex items-center gap-2.5">
 							<Flag
 								code={nation.code}
 								emoji={nation.flag ?? undefined}
 								size="sm"
 							/>
 							<div>
-								<p className="font-medium">{nation.name}</p>
-								<p className="text-muted-foreground text-xs">{nation.code}</p>
+								<p className="font-medium text-sm">{nation.name}</p>
+								<p className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-widest">
+									{nation.code}
+								</p>
 							</div>
 							{nation.confederation && (
-								<Badge variant="outline">{nation.confederation}</Badge>
+								<Badge variant="outline" className="text-[0.6rem]">
+									{nation.confederation}
+								</Badge>
 							)}
 						</div>
 					);
@@ -133,19 +152,22 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 			{
 				id: "score",
 				header: ({ column }) => (
-					<button
-						type="button"
-						className="flex items-center gap-1"
+					<Button
+						variant="ghost"
+						size="sm"
+						className="-z-10 -ml-2 h-auto gap-1 p-0 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+						data-cuelume-press="press"
+						data-cuelume-release="release"
 					>
 						Score
-						<ArrowUpDown className="h-3 w-3" />
-					</button>
+						<SortV size={12} />
+					</Button>
 				),
 				accessorFn: (row) => row.score,
 				size: 100,
 				cell: ({ getValue, row: cellRow }) => (
-					<span className="font-medium tabular-nums">
+					<span className="font-mono font-semibold text-sm tabular-nums">
 						{(getValue() as number).toFixed(
 							cellRow.original.tier === 1 ? 4 : 2,
 						)}
@@ -155,19 +177,22 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 			{
 				id: "fifaRank",
 				header: ({ column }) => (
-					<button
-						type="button"
-						className="flex items-center gap-1"
+					<Button
+						variant="ghost"
+						size="sm"
+						className="-z-10 -ml-2 h-auto gap-1 p-0 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+						data-cuelume-press="press"
+						data-cuelume-release="release"
 					>
-						FIFA Rank
-						<ArrowUpDown className="h-3 w-3" />
-					</button>
+						FIFA
+						<SortV size={12} />
+					</Button>
 				),
 				accessorFn: (row) => row.fifaRank,
-				size: 90,
+				size: 72,
 				cell: ({ getValue }) => (
-					<span className="tabular-nums">
+					<span className="font-mono text-muted-foreground text-sm tabular-nums">
 						{(getValue() as number | null) ?? "—"}
 					</span>
 				),
@@ -203,7 +228,9 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 				accessorFn: (row) => row.phase,
 				size: 120,
 				cell: ({ getValue }) => (
-					<span className="text-sm">{getValue() as string}</span>
+					<Badge variant="secondary" className="text-[0.6rem]">
+						{getValue() as string}
+					</Badge>
 				),
 			},
 		],
@@ -275,20 +302,20 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 
 	if (isLoading) {
 		return (
-			<div className="w-full">
+			<div className="overflow-hidden border border-border/40 bg-card/30">
 				<Table>
 					<TableHeader>
-						<TableRow>
-							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+						<TableRow className="hover:bg-transparent">
+							<TableHead className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
 								#
 							</TableHead>
-							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+							<TableHead className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
 								Nation
 							</TableHead>
-							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+							<TableHead className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
 								Score
 							</TableHead>
-							<TableHead className="font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest">
+							<TableHead className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
 								Phase
 							</TableHead>
 						</TableRow>
@@ -305,8 +332,8 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 
 	if (!epochData || epochData.length === 0) {
 		return (
-			<div className="flex min-h-[200px] items-center justify-center rounded-lg border bg-card p-6 text-center">
-				<p className="text-muted-foreground text-sm">
+			<div className="flex min-h-[200px] items-center justify-center border border-border/40 bg-card/30 p-6 text-center">
+				<p className="font-mono text-muted-foreground text-sm">
 					No ranking data available for this epoch.
 				</p>
 			</div>
@@ -317,13 +344,15 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 		<div className="w-full" data-slot="ranking-table">
 			{/* Controls */}
 			<div className="mb-4 flex flex-wrap items-center gap-3">
-				<div className="relative w-64">
-					<Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<div className="relative w-56">
+					<Search size={14} className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
 					<Input
 						placeholder="Search nations..."
 						value={searchText}
 						onChange={(e) => setSearchText(e.target.value)}
-						className="pl-8"
+						className="pl-9"
+						data-cuelume-focus="focus"
+						data-cuelume-blur="release"
 					/>
 					{searchText && (
 						<button
@@ -331,143 +360,169 @@ function RankingTableInner({ epochs, initialEpoch }: RankingTableProps) {
 							onClick={() => setSearchText("")}
 							className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 						>
-							<X className="h-4 w-4" />
+							<XCircle size={14} />
 						</button>
 					)}
 				</div>
 				<EpochSelector epochs={epochs} />
 				<ComparisonToggle />
 				{isSorted && (
-					<Button variant="outline" size="sm" onClick={() => setSorting([])}>
-						Reset to Rank Order
+					<Button variant="outline" size="sm" onClick={() => setSorting([])} data-cuelume-press="press" data-cuelume-release="release">
+						Reset
 					</Button>
 				)}
 			</div>
 
 			{/* Table */}
-			<Table>
-				<TableHeader>
-					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow
-							key={headerGroup.id}
-							className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-						>
-							{headerGroup.headers.map((header) => {
-								if (!header.column.getIsVisible()) return null;
-								return (
-									<TableHead
-										key={header.id}
-										className={cn(
-											"select-none font-mono text-[0.7rem] text-muted-foreground uppercase tracking-widest",
-											(
-												header.column.columnDef.meta as
-													| { sticky?: string }
-													| undefined
-											)?.sticky && "sticky left-0 z-20 bg-background",
-										)}
-									>
-										{header.isPlaceholder
-											? null
-											: flexRender(
-													header.column.columnDef.header,
-													header.getContext(),
-												)}
-									</TableHead>
-								);
-							})}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody>
-					{table.getRowModel().rows.map((row, index) => {
-						const showTierBoundary =
-							!isSorted && tierBoundaryIndex === index - 1;
-						const original = row.original as EpochRow;
-						const isTier1 = original.tier === 1;
-						const isChampion = original.rank === 1;
+			<div className="overflow-hidden border border-border/40 bg-card/30">
+				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((headerGroup) => (
+							<TableRow key={headerGroup.id} className="hover:bg-transparent">
+								{headerGroup.headers.map((header) => {
+									if (!header.column.getIsVisible()) return null;
+									return (
+										<TableHead
+											key={header.id}
+											className={cn(
+												"select-none font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]",
+												(
+													header.column.columnDef.meta as
+														| { sticky?: string }
+														| undefined
+												)?.sticky && "sticky left-0 z-20 bg-card/95",
+											)}
+										>
+											{header.isPlaceholder
+												? null
+												: flexRender(
+														header.column.columnDef.header,
+														header.getContext(),
+													)}
+										</TableHead>
+									);
+								})}
+							</TableRow>
+						))}
+					</TableHeader>
+					<TableBody>
+						{table.getRowModel().rows.map((row, index) => {
+							const showTierBoundary =
+								!isSorted && tierBoundaryIndex === index - 1;
+							const original = row.original as EpochRow;
+							const isTier1 = original.tier === 1;
+							const isChampion = original.rank === 1;
 
-						return (
-							<Fragment key={`${row.id}-${index}`}>
-								{showTierBoundary && (
-									<TierBoundaryRow
-										key={`tier-boundary-${index}`}
-										label="--- Tier Boundary --- The Qualifiers Tier"
-										colSpan={visibleColumnCount}
-									/>
-								)}
-								{isTier1 && !reducedMotion ? (
-									<motion.tr
-										key={row.id}
-										layout
-										initial={{ opacity: 0, y: 8 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: index * 0.02 }}
-										className={cn(
-											"group cursor-pointer",
-											"hover:bg-muted/50",
-											isChampion &&
-												"border-l-3 border-l-champion-gold bg-champion-gold-muted/20 hover:bg-champion-gold-muted/30",
-										)}
-										onClick={() => setSelectedRow(original)}
-									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												key={cell.id}
-												className={cn(
-													(
-														cell.column.columnDef.meta as
-															| { sticky?: string }
-															| undefined
-													)?.sticky &&
-														"sticky left-0 z-20 bg-background group-hover:bg-muted/50",
-													isChampion && "bg-champion-gold-muted/20",
-												)}
-											>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)}
-											</TableCell>
-										))}
-									</motion.tr>
-								) : (
-									<TableRow
-										key={row.id}
-										className={cn(
-											"group cursor-pointer transition-colors",
-											"hover:bg-muted/50",
-											!isTier1 && "text-muted-foreground/80",
-											isChampion &&
-												"border-l-3 border-l-champion-gold bg-champion-gold-muted/20 hover:bg-champion-gold-muted/30",
-										)}
-										onClick={() => setSelectedRow(original)}
-									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												key={cell.id}
-												className={cn(
-													(
-														cell.column.columnDef.meta as
-															| { sticky?: string }
-															| undefined
-													)?.sticky &&
-														"sticky left-0 z-20 bg-background group-hover:bg-muted/50",
-													isChampion && "bg-champion-gold-muted/20",
-												)}
-											>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)}
-											</TableCell>
-										))}
-									</TableRow>
-								)}
-							</Fragment>
-						);
-					})}
-				</TableBody>
-			</Table>
+							return (
+								<Fragment key={`${row.id}-${index}`}>
+									{showTierBoundary && (
+										<TierBoundaryRow
+											key={`tier-boundary-${index}`}
+											label="--- Tier Boundary --- The Qualifiers Tier"
+											colSpan={visibleColumnCount}
+										/>
+									)}
+									{isTier1 && !reducedMotion ? (
+										<motion.tr
+											key={row.id}
+											layout
+											initial={{ opacity: 0, x: -8 }}
+											animate={{ opacity: 1, x: 0 }}
+											transition={{
+												delay: Math.min(index * 0.015, 0.4),
+												duration: 0.25,
+												ease: [0.32, 0.72, 0, 1] as [
+													number,
+													number,
+													number,
+													number,
+												],
+											}}
+											className={cn(
+												"group cursor-pointer",
+												"hover:bg-muted/40",
+												isChampion &&
+													"border-l-2 border-l-champion-gold bg-champion-gold-muted/20 hover:bg-champion-gold-muted/30",
+											)}
+											onClick={() => setSelectedRow(original)}
+												data-cuelume-press="press"
+										>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell
+													key={cell.id}
+													className={cn(
+														(
+															cell.column.columnDef.meta as
+																| { sticky?: string }
+																| undefined
+														)?.sticky &&
+															"sticky left-0 z-20 bg-card/95 group-hover:bg-muted/40",
+														isChampion && "bg-champion-gold-muted/20",
+													)}
+												>
+													{flexRender(
+														cell.column.columnDef.cell,
+														cell.getContext(),
+													)}
+												</TableCell>
+											))}
+										</motion.tr>
+									) : (
+										<TableRow
+											key={row.id}
+											className={cn(
+												"group cursor-pointer transition-colors",
+												"hover:bg-muted/40",
+												!isTier1 && "text-muted-foreground/80",
+												isChampion &&
+													"border-l-2 border-l-champion-gold bg-champion-gold-muted/20 hover:bg-champion-gold-muted/30",
+											)}
+											onClick={() => setSelectedRow(original)}
+												data-cuelume-press="press"
+										>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell
+													key={cell.id}
+													className={cn(
+														(
+															cell.column.columnDef.meta as
+																| { sticky?: string }
+																| undefined
+														)?.sticky &&
+															"sticky left-0 z-20 bg-card/95 group-hover:bg-muted/40",
+														isChampion && "bg-champion-gold-muted/20",
+													)}
+												>
+													{flexRender(
+														cell.column.columnDef.cell,
+														cell.getContext(),
+													)}
+												</TableCell>
+											))}
+										</TableRow>
+									)}
+								</Fragment>
+							);
+						})}
+					</TableBody>
+				</Table>
+			</div>
+
+			{/* Footer */}
+			{!isLoading && epochData && (
+				<div className="mt-3 flex items-center justify-between font-mono text-[0.6rem] text-muted-foreground uppercase tracking-widest">
+					<span>
+						{epochData.length} nations · {year}
+					</span>
+					{searchParams.get("mode") !== "none" && searchParams.get("mode") && (
+						<Badge variant="secondary" className="text-[0.6rem]">
+							{searchParams.get("mode") === "fifa"
+								? "FIFA comparison"
+								: "Historical comparison"}
+						</Badge>
+					)}
+				</div>
+			)}
 
 			{/* Nation Detail Dialog */}
 			<NationDetailDialog

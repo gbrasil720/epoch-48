@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@epoch-48/ui/components/badge";
 import { Button } from "@epoch-48/ui/components/button";
 import {

@@ -1,1 +1,31 @@
 @import "@epoch-48/ui/globals.css";
+
+/* Subtle ambient gradient background */
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	background: radial-gradient(
+		ellipse 80% 60% at 50% -20%,
+		oklch(0.94 0.04 155 / 0.3),
+		transparent
+	);
+}
+
+.dark body::before {
+	background: radial-gradient(
+		ellipse 80% 60% at 50% -20%,
+		oklch(0.22 0.04 155 / 0.4),
+		transparent
+	);
+}
+
+/* Ensure content sits above the ambient gradient */
+main,
+header,
+footer {
+	position: relative;
+	z-index: 1;
+}

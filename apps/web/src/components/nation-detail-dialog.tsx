@@ -9,9 +9,10 @@ import {
 } from "@epoch-48/ui/components/dialog";
 import { cn } from "@epoch-48/ui/lib/utils";
 import { motion } from "framer-motion";
+import { Ban, ChartBar, Shield, Trophy } from "reicon-react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import DeltaBadge from "./delta-badge";
-import Flag from "./flag";
+import { Flag } from "./flag";
 
 export interface EpochRow {
 	rank: number;
@@ -49,6 +50,32 @@ interface NationDetailDialogProps {
 	row: EpochRow | null;
 }
 
+function StatItem({
+	label,
+	value,
+	icon: Icon,
+}: {
+	label: string;
+	value: React.ReactNode;
+	icon: React.ElementType;
+}) {
+	return (
+		<div className="flex items-center gap-3 border border-border/30 bg-card/50 p-3">
+			<div className="flex size-7 shrink-0 items-center justify-center bg-muted/60 text-muted-foreground">
+				<Icon size={14} />
+			</div>
+			<div>
+				<div className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
+					{label}
+				</div>
+				<div className="font-mono font-semibold text-sm tabular-nums">
+					{value}
+				</div>
+			</div>
+		</div>
+	);
+}
+
 export function NationDetailDialog({
 	open,
 	onOpenChange,
@@ -66,8 +93,8 @@ export function NationDetailDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-md">
 				<motion.div
-					initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }}
-					animate={{ scale: 1, opacity: 1 }}
+					initial={reducedMotion ? undefined : { scale: 0.95, opacity: 0 }}
+					animate={reducedMotion ? undefined : { scale: 1, opacity: 1 }}
 					transition={
 						reducedMotion
 							? undefined
@@ -75,137 +102,167 @@ export function NationDetailDialog({
 					}
 				>
 					<DialogHeader>
-						<DialogTitle className="flex items-center gap-3">
+						<div className="flex items-center gap-3">
 							<Flag
 								code={nation.code}
 								emoji={nation.flag ?? undefined}
 								size="lg"
-								className="rounded-full"
+								className="rounded"
 							/>
 							<div>
-								<span className="font-bold font-heading text-xl">
+								<DialogTitle className="font-bold font-mono text-lg uppercase tracking-tight">
 									{nation.name}
-								</span>
-								<span className="ml-2 font-normal text-muted-foreground text-sm">
-									{nation.code}
-								</span>
+									<span className="ml-2 font-normal text-muted-foreground text-sm">
+										{nation.code}
+									</span>
+								</DialogTitle>
 							</div>
-						</DialogTitle>
+						</div>
 					</DialogHeader>
 
 					{/* Badges */}
 					<div className="flex flex-wrap gap-2 pt-2">
-						<Badge variant={row.tier === 1 ? "default" : "secondary"}>
+						<Badge
+							variant={row.tier === 1 ? "default" : "secondary"}
+							className={cn(
+								"font-mono text-[0.6rem] uppercase tracking-widest",
+								row.tier === 1 && "bg-brand/10 text-brand",
+							)}
+						>
 							Tier {row.tier}
 						</Badge>
-						{row.nation.confederation && (
-							<Badge variant="outline">{row.nation.confederation}</Badge>
+						{nation.confederation && (
+							<Badge
+								variant="outline"
+								className="font-mono text-[0.6rem] uppercase tracking-widest"
+							>
+								{nation.confederation}
+							</Badge>
 						)}
-						<Badge variant="secondary">{row.phase}</Badge>
+						<Badge
+							variant="secondary"
+							className="font-mono text-[0.6rem] uppercase tracking-widest"
+						>
+							{row.phase}
+						</Badge>
 					</div>
 
 					{/* Rank + Score */}
-					<div className="grid grid-cols-2 gap-4 py-4">
-						<div className="space-y-1">
-							<p className="text-muted-foreground text-xs">Rank</p>
-							<p
-								className={cn(
-									"font-black font-heading text-3xl tabular-nums",
-									isChampion && "text-champion-gold",
-								)}
-							>
-								#{paddedRank}
-							</p>
-						</div>
-						<div className="space-y-1">
-							<p className="text-muted-foreground text-xs">
-								{row.tier === 1 ? "Epoch Score" : "Q-Index"}
-							</p>
-							<p className="font-bold font-heading text-2xl tabular-nums">
-								{row.score.toFixed(row.tier === 1 ? 4 : 2)}
-							</p>
-						</div>
+					<div className="mt-4 grid grid-cols-2 gap-3">
+						<StatItem
+							icon={Trophy}
+							label="Rank"
+							value={
+								<span
+									className={cn(
+										"tabular-nums",
+										isChampion && "text-champion-gold",
+									)}
+								>
+									#{paddedRank}
+								</span>
+							}
+						/>
+						<StatItem
+							icon={ChartBar}
+							label={row.tier === 1 ? "Epoch Score" : "Q-Index"}
+							value={row.score.toFixed(row.tier === 1 ? 4 : 2)}
+						/>
 					</div>
 
 					{/* Deltas */}
-					<div className="border-border/50 border-t pt-4">
-						<h4 className="mb-2 font-medium text-sm">Comparison</h4>
+					<div className="mt-4 border-border/40 border-t pt-4">
+						<div className="mb-3 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.2em]">
+							Comparison
+						</div>
 						<div className="grid grid-cols-2 gap-3">
-							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs">FIFA Rank</p>
-								<p className="font-medium text-lg tabular-nums">
-									{row.fifaRank ?? "—"}
-								</p>
+							<StatItem
+								icon={Shield}
+								label="FIFA Rank"
+								value={row.fifaRank ?? "—"}
+							/>
+							<div className="flex items-center gap-3 border border-border/30 bg-card/50 p-3">
+								<div className="flex size-7 shrink-0 items-center justify-center bg-muted/60 text-muted-foreground">
+									<ChartBar size={14} />
+								</div>
+								<div>
+									<div className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
+										FIFA Δ
+									</div>
+									<DeltaBadge value={row.fifaDelta ?? null}>
+										FIFA − Epoch
+									</DeltaBadge>
+								</div>
 							</div>
-							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs">FIFA Delta</p>
-								<DeltaBadge value={row.fifaDelta ?? null}>
-									FIFA − Epoch
-								</DeltaBadge>
-							</div>
-							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs">Previous Rank</p>
-								<p className="font-medium text-lg tabular-nums">
-									{row.previousEpochRank ?? "—"}
-								</p>
-							</div>
-							<div className="space-y-1">
-								<p className="text-muted-foreground text-xs">
-									Historical Delta
-								</p>
-								<DeltaBadge value={row.historicalDelta ?? null}>
-									Prev − Current
-								</DeltaBadge>
+							<StatItem
+								icon={Shield}
+								label="Previous Rank"
+								value={row.previousEpochRank ?? "—"}
+							/>
+							<div className="flex items-center gap-3 border border-border/30 bg-card/50 p-3">
+								<div className="flex size-7 shrink-0 items-center justify-center bg-muted/60 text-muted-foreground">
+									<Ban size={14} />
+								</div>
+								<div>
+									<div className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.15em]">
+										Historical Δ
+									</div>
+									<DeltaBadge value={row.historicalDelta ?? null}>
+										Prev − Current
+									</DeltaBadge>
+								</div>
 							</div>
 						</div>
 					</div>
 
 					{/* Match Stats */}
-					<div className="border-border/50 border-t pt-4">
-						<h4 className="mb-2 font-medium text-sm">Match Stats</h4>
-						<div className="grid grid-cols-3 gap-3 text-sm">
-							<div>
-								<p className="text-muted-foreground text-xs">Matches</p>
-								<p className="font-medium tabular-nums">
-									{stats.matchesPlayed}
-								</p>
-							</div>
-							<div>
-								<p className="text-muted-foreground text-xs">Points</p>
-								<p className="font-medium tabular-nums">{stats.pointsGained}</p>
-							</div>
-							<div>
-								<p className="text-muted-foreground text-xs">Goals For</p>
-								<p className="font-medium tabular-nums">{stats.goalsFor}</p>
-							</div>
-							<div>
-								<p className="text-muted-foreground text-xs">Goal Diff</p>
-								<p className="font-medium tabular-nums">{stats.goalsDiff}</p>
-							</div>
-							<div>
-								<p className="text-muted-foreground text-xs">Yellow Cards</p>
-								<p className="font-medium tabular-nums">{stats.yellowCards}</p>
-							</div>
-							<div>
-								<p className="text-muted-foreground text-xs">Red Cards</p>
-								<p className="font-medium tabular-nums">{stats.redCards}</p>
-							</div>
+					<div className="mt-4 border-border/40 border-t pt-4">
+						<div className="mb-3 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.2em]">
+							Match Stats
+						</div>
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+							<StatItem
+								icon={Shield}
+								label="Matches"
+								value={stats.matchesPlayed}
+							/>
+							<StatItem
+								icon={Trophy}
+								label="Points"
+								value={stats.pointsGained}
+							/>
+							<StatItem
+								icon={Trophy}
+								label="Goals For"
+								value={stats.goalsFor}
+							/>
+							<StatItem icon={Ban} label="Goal Diff" value={stats.goalsDiff} />
+							<StatItem
+								icon={Ban}
+								label="Yellow Cards"
+								value={stats.yellowCards}
+							/>
+							<StatItem icon={Ban} label="Red Cards" value={stats.redCards} />
 						</div>
 					</div>
 
 					{stats.continentalBonus !== null && stats.continentalBonus !== 0 && (
-						<div className="border-border/50 border-t pt-4">
-							<h4 className="mb-1 font-medium text-sm">Continental Bonus</h4>
-							<p className="text-sm tabular-nums">
+						<div className="mt-4 border-border/40 border-t pt-4">
+							<div className="mb-2 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.2em]">
+								Continental Bonus
+							</div>
+							<p className="font-mono text-sm tabular-nums">
 								{stats.continentalBonus.toFixed(2)}
 							</p>
 						</div>
 					)}
 
 					{stats.qualifier && (
-						<div className="border-border/50 border-t pt-4">
-							<h4 className="mb-1 font-medium text-sm">Qualifier Progress</h4>
-							<p className="text-sm tabular-nums">
+						<div className="mt-4 border-border/40 border-t pt-4">
+							<div className="mb-2 font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.2em]">
+								Qualifier Progress
+							</div>
+							<p className="font-mono text-sm tabular-nums">
 								{stats.qualifier.pointsEarned} /{" "}
 								{stats.qualifier.maxPossiblePoints} pts
 							</p>
