@@ -1,5 +1,5 @@
 import { Badge } from "@epoch-48/ui/components/badge";
-import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
+import { ArrowDown, ArrowUp } from "reicon-react";
 import type { ReactNode } from "react";
 
 interface DeltaBadgeProps {
@@ -10,21 +10,22 @@ interface DeltaBadgeProps {
 export default function DeltaBadge({ value, children }: DeltaBadgeProps) {
 	if (value === null || value === undefined) return null;
 	const formatted = value >= 0 ? `+${value}` : `${value}`;
-	const Icon = value >= 0 ? ArrowUpIcon : ArrowDownIcon;
+	const Icon = value >= 0 ? ArrowUp : ArrowDown;
 
 	return (
-		<span
-			className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-xs ${
+		<Badge
+			variant="outline"
+			className={`gap-1 ${
 				value > 0
-					? "bg-green-500/15 text-green-600 dark:text-green-400"
+					? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
 					: value < 0
-						? "bg-red-500/15 text-red-600 dark:text-red-400"
+						? "bg-red-500/10 text-red-600 dark:text-red-400"
 						: "bg-muted text-muted-foreground"
 			}`}
 		>
-			<Icon className="size-3" />
+			<Icon size={12} />
 			{formatted}
 			{children && <span className="text-muted-foreground">{children}</span>}
-		</span>
+		</Badge>
 	);
 }

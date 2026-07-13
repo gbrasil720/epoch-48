@@ -16,12 +16,7 @@ const SIZE_MAP = {
 	lg: { w: 48, h: 48 },
 } as const;
 
-export default function Flag({
-	code,
-	emoji,
-	size = "sm",
-	className = "",
-}: FlagProps) {
+export function Flag({ code, emoji, size = "sm", className = "" }: FlagProps) {
 	const { w, h } = SIZE_MAP[size];
 	const url = flagUrl(code ?? null);
 

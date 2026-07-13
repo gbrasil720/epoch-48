@@ -1,181 +1,170 @@
 "use client";
 
+import { Badge } from "@epoch-48/ui/components/badge";
+import { Button } from "@epoch-48/ui/components/button";
+import { Input } from "@epoch-48/ui/components/input";
+import { Label } from "@epoch-48/ui/components/label";
 import {
-	type Cards,
-	continentalBonus,
-	epochScore,
-	PHASE_WEIGHTS,
-	performancePoints,
-	type TournamentPhase,
-	TournamentPhaseName,
-} from "@epoch-48/epoch-engine";
-import React, { useId, useMemo, useState } from "react";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@epoch-48/ui/components/select";
+import { motion } from "framer-motion";
+import { Calculator, RotateLeft2 } from "reicon-react";
+import { useState } from "react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
-const PHASE_OPTIONS = Object.entries(PHASE_WEIGHTS).map(([key, weight]) => ({
-	value: key as TournamentPhaseName,
-	label: `${key} (${weight})`,
-}));
+const phases = [
+	{ label: "Winner", value: "100" },
+	{ label: "Runner-up", value: "95" },
+	{ label: "3rd Place", value: "90" },
+	{ label: "4th Place", value: "85" },
+	{ label: "Quarter-final", value: "75" },
+	{ label: "Round of 16", value: "60" },
+	{ label: "Group Stage", value: "25" },
+];
 
-function Field({
-	label,
-	children,
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
-	const id = useId();
-	return (
-		<div>
-			<label htmlFor={id} className="mb-1 block font-medium text-sm">
-				{label}
-			</label>
-			{React.Children.map(children, (child) => {
-				if (React.isValidElement(child)) {
-					return React.cloneElement(
-						child as React.ReactElement<{ id?: string }>,
-						{
-							id,
-						},
-					);
-				}
-				return child;
-			})}
-		</div>
-	);
-}
+export function ESPlayground() {
+	const reducedMotion = useReducedMotion();
+	const [phase, setPhase] = useState("100");
+	const [pointsPerMatch, setPointsPerMatch] = useState("2.0");
+	const [goalDiff, setGoalDiff] = useState("10");
+	const [goalsScored, setGoalsScored] = useState("15");
+	const [fairPlay, setFairPlay] = useState("0");
+	const [continentalBonus, setContinentalBonus] = useState("5");
 
-export default function ESPlayground() {
-	const [phase, setPhase] = useState(TournamentPhaseName.GROUP_STAGE);
-	const [pointsGained, setPointsGained] = useState(15);
-	const [gamesPlayed, setGamesPlayed] = useState(7);
-	const [goalsDiff, setGoalsDiff] = useState(5);
-	const [goalsFor, setGoalsFor] = useState(10);
-	const [yellowCards, setYellowCards] = useState(3);
-	const [redCards, setRedCards] = useState(0);
-	const [cFactor, setCFactor] = useState(0.0);
+	const pf = Number(phase);
+	const ppm = Number(pointsPerMatch);
+	const gd = Number(goalDiff);
+	const gs = Number(goalsScored);
+	const fp = Number(fairPlay);
+	const bc = Number(continentalBonus);
 
-	const tournamentPhase: TournamentPhase = {
-		name: phase,
+	const pd = ppm * 10 + gd * 0.5 + gs * 0.1 - fp * 0.1;
+	const es = pf + (pd + bc) / 100;
+
+	const reset = () => {
+		setPhase("100");
+		setPointsPerMatch("2.0");
+		setGoalDiff("10");
+		setGoalsScored("15");
+		setFairPlay("0");
+		setContinentalBonus("5");
 	};
 
-	const cards: Cards[] = useMemo(() => {
-		const arr: Cards[] = [];
-		if (yellowCards > 0) arr.push({ color: "yellow", count: yellowCards });
-		if (redCards > 0) arr.push({ color: "red", count: redCards });
-		return arr;
-	}, [yellowCards, redCards]);
-
-	const baseProps = {
-		tournamentPhase,
-		pointsGained,
-		gamesPlayed,
-		goalsDiff,
-		goalsFor,
-		cardsReceived: cards.length > 0 ? cards : null,
-	};
-
-	const pp = useMemo(() => performancePoints(baseProps), [baseProps]);
-
-	const cb = useMemo(
-		() => continentalBonus(baseProps, cFactor),
-		[baseProps, cFactor],
-	);
-
-	const es = useMemo(
-		() => epochScore(baseProps, cb),
-		[baseProps, cb],
-	);
-
 	return (
-		<div className="rounded-lg border bg-card p-4">
-			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-				<Field label="Phase">
-					<select
-						value={phase}
-						onChange={(e) => setPhase(e.target.value as TournamentPhaseName)}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-					>
-						{PHASE_OPTIONS.map((opt) => (
-							<option key={opt.value} value={opt.value}>
-								{opt.label}
-							</option>
-						))}
-					</select>
-				</Field>
-				<Field label="Points Gained">
-					<input
+		<div className="space-y-4">
+			<div className="grid gap-4 sm:grid-cols-2">
+				<div className="space-y-1.5">
+					<Label className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-widest">
+						Tournament Phase
+					</Label>
+					<Select value={phase} onValueChange={(v) => setPhase(v ?? "100")}>
+						<SelectTrigger data-cuelume-press="press" data-cuelume-release="release">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{phases.map((p) => (
+								<SelectItem key={p.value} value={p.value}>
+									{p.label} ({p.value})
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+
+				<div className="space-y-1.5">
+					<Label className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-widest">
+						Continental Bonus
+					</Label>
+					<Input
 						type="number"
-						value={pointsGained}
-						onChange={(e) => setPointsGained(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+						value={continentalBonus}
+						onChange={(e) => setContinentalBonus(e.target.value)}
 					/>
-				</Field>
-				<Field label="Games Played">
-					<input
+				</div>
+
+				<div className="space-y-1.5">
+					<Label className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-widest">
+						Points Per Match
+					</Label>
+					<Input
 						type="number"
-						value={gamesPlayed}
-						onChange={(e) => setGamesPlayed(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+						step="0.1"
+						value={pointsPerMatch}
+						onChange={(e) => setPointsPerMatch(e.target.value)}
 					/>
-				</Field>
-				<Field label="Goal Difference">
-					<input
+				</div>
+
+				<div className="space-y-1.5">
+					<Label className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-widest">
+						Goal Difference
+					</Label>
+					<Input
 						type="number"
-						value={goalsDiff}
-						onChange={(e) => setGoalsDiff(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+						value={goalDiff}
+						onChange={(e) => setGoalDiff(e.target.value)}
 					/>
-				</Field>
-				<Field label="Goals Scored">
-					<input
+				</div>
+
+				<div className="space-y-1.5">
+					<Label className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-widest">
+						Goals Scored
+					</Label>
+					<Input
 						type="number"
-						value={goalsFor}
-						onChange={(e) => setGoalsFor(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+						value={goalsScored}
+						onChange={(e) => setGoalsScored(e.target.value)}
 					/>
-				</Field>
-				<Field label="Yellow Cards">
-					<input
+				</div>
+
+				<div className="space-y-1.5">
+					<Label className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-widest">
+						Fair Play Deduction
+					</Label>
+					<Input
 						type="number"
-						value={yellowCards}
-						onChange={(e) => setYellowCards(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+						value={fairPlay}
+						onChange={(e) => setFairPlay(e.target.value)}
 					/>
-				</Field>
-				<Field label="Red Cards">
-					<input
-						type="number"
-						value={redCards}
-						onChange={(e) => setRedCards(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-					/>
-				</Field>
-				<Field label="Continental Bonus Factor">
-					<input
-						type="number"
-						step="0.01"
-						value={cFactor}
-						onChange={(e) => setCFactor(Number(e.target.value))}
-						className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-					/>
-				</Field>
+				</div>
 			</div>
 
-			<div className="mt-4 rounded-md bg-muted/50 p-3">
-				<div className="grid grid-cols-3 gap-4 text-center">
+			<div className="flex items-center justify-between">
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={reset}
+					className="gap-1.5 font-mono text-muted-foreground text-xs uppercase tracking-widest"
+					data-cuelume-press="press"
+					data-cuelume-release="release"
+				>
+					<RotateLeft2 size={14} />
+					Reset
+				</Button>
+
+				<motion.div
+					key={es.toFixed(2)}
+					initial={reducedMotion ? undefined : { scale: 0.95, opacity: 0 }}
+					animate={reducedMotion ? undefined : { scale: 1, opacity: 1 }}
+					transition={{
+						duration: 0.2,
+						ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
+					}}
+					className="flex items-center gap-2 border border-brand/20 bg-brand/5 px-4 py-2"
+				>
+					<Calculator size={16} className="text-brand" />
 					<div>
-						<p className="text-muted-foreground text-xs">Performance Pts</p>
-						<p className="font-bold font-mono text-lg">{pp.toFixed(2)}</p>
+						<div className="font-mono text-[0.6rem] text-muted-foreground uppercase tracking-[0.2em]">
+							Epoch Score
+						</div>
+						<div className="font-bold font-mono text-brand text-xl tabular-nums">
+							{es.toFixed(2)}
+						</div>
 					</div>
-					<div>
-						<p className="text-muted-foreground text-xs">Cont. Bonus</p>
-						<p className="font-bold font-mono text-lg">{cb.toFixed(2)}</p>
-					</div>
-					<div>
-						<p className="text-muted-foreground text-xs">Epoch Score</p>
-						<p className="font-bold font-mono text-lg">{es.toFixed(4)}</p>
-					</div>
-				</div>
+				</motion.div>
 			</div>
 		</div>
 	);
